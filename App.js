@@ -1,9 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import {
+  Button,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 
 // Replace with your machine's IP if needed.
-const API_BASE = 'http://192.168.68.67:8000';
+const API_BASE = 'http://10.0.0.145:8000';
 
 export default function App() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -16,7 +23,10 @@ export default function App() {
   // detection boxes from backend
   const [boxes, setBoxes] = useState([]);
   // dimensions of the camera preview for scaling boxes
-  const [previewLayout, setPreviewLayout] = useState({ width: 0, height: 0 });
+  const [previewLayout, setPreviewLayout] = useState({
+    width: 0,
+    height: 0,
+  });
 
   // continuous detection control
   const [streaming, setStreaming] = useState(false);
@@ -52,7 +62,7 @@ export default function App() {
     setStatus('Detecting people...');
     intervalRef.current = setInterval(() => {
       captureAndDetect();
-    }, 10); // 0.01s between frames
+    }, 500); // 0.5s between frames
 
     return () => {
       if (intervalRef.current) {
@@ -84,6 +94,7 @@ export default function App() {
   const captureAndDetect = async () => {
     if (!cameraRef.current) return;
     if (captureInProgress.current) return; // avoid overlapping calls
+    if (!streaming) return;
 
     try {
       captureInProgress.current = true;
@@ -113,7 +124,6 @@ export default function App() {
       }
 
       const data = await res.json();
-      // console.log('detection result:', data);
 
       setBoxes(Array.isArray(data.boxes) ? data.boxes : []);
       setStatus(`People detected: ${data.count || 0}`);
@@ -135,7 +145,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      {/* Wrap the camera so we can measure its on-screen size */}
+      {/* Camera area with overlays */}
       <View
         style={styles.cameraWrapper}
         onLayout={(e) => setPreviewLayout(e.nativeEvent.layout)}
@@ -149,7 +159,8 @@ export default function App() {
         />
 
         {/* Draw detection boxes + confidence labels over the camera preview */}
-        {previewLayout.width > 0 &&
+        {streaming &&
+          previewLayout.width > 0 &&
           previewLayout.height > 0 &&
           boxes.map((b, idx) => {
             const left = b.x1 * previewLayout.width;
@@ -188,19 +199,31 @@ export default function App() {
               </View>
             );
           })}
-      </View>
 
-      <View style={styles.controls}>
-        <Button
-          title={streaming ? 'Stop Detect' : 'Start Detect'}
-          onPress={toggleStreaming}
-        />
-        <Text style={styles.text}>{status}</Text>
-        <Button
-          title={`Switch to ${facing === 'front' ? 'back' : 'front'} camera`}
-          onPress={toggleFacing}
-        />
-      </View>
+        {/* Floating round camera switch button in bottom-right */}
+        <TouchableOpacity style={styles.switchButton} onPress={toggleFacing}>
+          <Image
+            source={require('./assets/icons8-flip-50.png')}
+            style={styles.switchIcon}
+          />
+        </TouchableOpacity>  
+
+        {/* Floating round camera switch button in bottom-right */}
+        <TouchableOpacity style={styles.settingsButton} >
+          <Image
+            source={require('./assets/icons8-setting-50.png')}
+            style={styles.settingsIcon}
+          />
+        </TouchableOpacity>
+
+        {/* Bottom-center controls for detection + status */}
+        <TouchableOpacity style={styles.startDetect} onPress={toggleStreaming}>
+          <Text style={styles.text}>{status}</Text>
+          <Text style={styles.detectText}>
+            {streaming ? 'Stop Detection' : 'Start Detection'}
+          </Text>
+        </TouchableOpacity>
+      </View>      
     </View>
   );
 }
@@ -222,9 +245,72 @@ const styles = StyleSheet.create({
   },
 
   text: {
-    color: '#fff',
-    marginTop: 8,
+    color: '#ffffffff',
     textAlign: 'center',
+    alignSelf: 'center',
+  },
+
+  // Floating round settings button
+  settingsButton: {
+    position: 'absolute',
+    bottom: 24,
+    left: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(56, 135, 201, 0.48)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // Floating round camera-switch button
+  switchButton: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(56, 135, 201, 0.48)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // Floating round start / stop detection button
+  startDetect: {
+    position: 'absolute',
+    bottom: 24,
+    alignSelf: 'center',
+    width: 200,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(56, 135, 201, 0.48)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  detectText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
+  switchIcon: {
+    width: 28,
+    height: 28,
+    tintColor: '#fff',
+  },
+
+  settingsIcon: {
+    width: 28,
+    height: 28,
+    tintColor: '#fff',
   },
 
   box: {
