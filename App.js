@@ -59,7 +59,7 @@ export default function App() {
   const selectedIdRef = useRef(selectedId);
 
   const [missingFrames, setMissingFrames] = useState(0);
-  const MAX_MISSING_FRAMES = 12;
+  const MAX_MISSING_FRAMES = 3;
 
   useEffect(() => {
     zoomRef.current = zoom;
@@ -215,7 +215,7 @@ export default function App() {
     if (!streaming) return;
     if (!permission?.granted) return;
 
-    const REQUEST_TIMEOUT_MS = 4000;
+    const REQUEST_TIMEOUT_MS = 1000;
 
     try {
       captureInProgress.current = true;
@@ -236,6 +236,11 @@ export default function App() {
       // Build multipart/form-data
       const form = new FormData();
       form.append('model', modelSize);
+      form.append('following', modeRef.current === 'following' ? 'true' : 'false');
+
+      if (modeRef.current === 'following' && selectedIdRef.current != null) {
+        form.append('guide_uid', String(selectedIdRef.current));
+      }
 
       // Name/type help FastAPI parse it cleanly
       form.append('image', {

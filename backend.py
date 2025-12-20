@@ -1,9 +1,12 @@
 import logging
 import threading
+from typing import Optional
+
 from fastapi import FastAPI, UploadFile, File, Form
 from ultralytics import YOLO
 from src.utils.detect import detectPerson
 from src.utils.track import SimpleTracker
+from src.utils.guide import guide
 
 # Run with: uvicorn backend:app --reload --host 0.0.0.0 --port 8000 --no-access-log
 
@@ -26,7 +29,7 @@ MODEL_FILES = {
 MODELS = {k: YOLO(path) for k, path in MODEL_FILES.items()}
 
 # Initialize tracker and lock for thread safety
-tracker = SimpleTracker(iou_thresh=0.3, max_missed=10)
+tracker = SimpleTracker(iou_thresh=0.25, max_missed=5)
 tracker_lock = threading.Lock()
 
 # Define the route for the detection endpoint
@@ -34,6 +37,8 @@ tracker_lock = threading.Lock()
 async def detect(
     image: UploadFile = File(...),
     model: str = Form("n"),
+    following: bool = Form(False),
+    guide_uid: Optional[int] = Form(None),
 ):
     # Run detection using YOLO model
     detections, w, h = await detectPerson(image, model, MODELS, PERSON_CLASS_ID, MIN_CONFIDENCE, MIN_REL_AREA)
@@ -42,8 +47,16 @@ async def detect(
     with tracker_lock:
         tracked = tracker.update(detections)
 
+    if following and guide_uid is not None:
+        guide(tracked, guide_uid)
+    
     # Return the count of tracked persons, their bounding boxes, and image dimensions
-    return {"count": len(tracked), "boxes": tracked, "img_w": w, "img_h": h}
+    return {
+        "count": len(tracked),
+        "boxes": tracked,
+        "img_w": w,
+        "img_h": h,
+    }
     
 # Define the route for resetting the tracker
 @app.post("/reset-tracker")
