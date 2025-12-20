@@ -10,7 +10,7 @@ export const styles = StyleSheet.create({
   },
 
   text: {
-    color: '#ffffffff',
+    color: '#fff',
     textAlign: 'center',
     alignSelf: 'center',
   },
@@ -62,7 +62,7 @@ export const styles = StyleSheet.create({
     bottom: 24,
     alignSelf: 'center',
     width: 200,
-    height: 68,
+    height: 56,
     borderRadius: 34,
     backgroundColor: 'rgba(56, 135, 201, 0.48)',
     borderWidth: 1,
@@ -79,7 +79,7 @@ export const styles = StyleSheet.create({
     width: 200,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(77, 163, 255, 0.35)',
+    backgroundColor: 'rgba(56, 135, 201, 0.48)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.35)',
     alignItems: 'center',

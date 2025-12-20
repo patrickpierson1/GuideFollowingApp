@@ -150,6 +150,7 @@ export default function App() {
             ? `Following ID ${selectedIdRef.current}`
             : 'Searching.'
         );
+        
       }
       return next;
     });
