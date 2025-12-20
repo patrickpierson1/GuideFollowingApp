@@ -45,3 +45,6 @@ __pycache__/
 node_modules/
 .venv/
 yolov8x.pt
+yolov8m.pt
+yolov8n.pt
+tf_export_env
