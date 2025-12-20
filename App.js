@@ -22,6 +22,7 @@ export default function App() {
   // -------------------------
   // Hooks (never conditional)
   // -------------------------
+  const HOLD_MS = 1000;
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef(null);
 
@@ -104,7 +105,7 @@ export default function App() {
   // -------------------------
   const { startHoldSelect, cancelHoldSelect } = useHoldSelect({
     enabled: modeRef.current === 'searching',
-    holdMs: 1000,
+    holdMs: HOLD_MS,
     onSelect: (id) => {
       setSelectedId(id);
       setMode('following');
@@ -208,38 +209,48 @@ export default function App() {
     }
   };
 
-  // -------------------------
-  // Detect loop
-  // -------------------------
   const captureAndDetect = async () => {
     if (!cameraRef.current) return;
     if (captureInProgress.current) return;
     if (!streaming) return;
     if (!permission?.granted) return;
+
     const REQUEST_TIMEOUT_MS = 4000;
 
     try {
       captureInProgress.current = true;
 
+      // Capture 
       const photo = await cameraRef.current.takePictureAsync({
-        base64: true,
-        exif: true,
-        quality: 1,
-        skipProcessing: false,
+        base64: false,
+        exif: false,
+        quality: 0.2,
+        skipProcessing: true,
       });
 
-      if (!photo?.base64) {
-        setStatus('No image data captured');
+      if (!photo?.uri) {
+        setStatus('No image URI captured');
         return;
       }
+
+      // Build multipart/form-data
+      const form = new FormData();
+      form.append('model', modelSize);
+
+      // Name/type help FastAPI parse it cleanly
+      form.append('image', {
+        uri: photo.uri,
+        name: 'frame.jpg',
+        type: 'image/jpeg',
+      });
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
+      // fetch will add the correct boundary.
       const res = await fetch(`${apiBase}/detect`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: photo.base64, model: modelSize }),
+        body: form,
         signal: controller.signal,
       }).finally(() => clearTimeout(timeoutId));
 
@@ -269,10 +280,10 @@ export default function App() {
       }
     } catch (err) {
       console.log('Detect error:', err);
-      if (err.name === 'AbortError') {
+      if (err?.name === 'AbortError') {
         setStatus('Network timeout; check IP');
       } else {
-        setStatus(`Network error: ${err.message}`);
+        setStatus(`Network error: ${err?.message ?? 'Unknown error'}`);
       }
     } finally {
       captureInProgress.current = false;
@@ -351,6 +362,7 @@ export default function App() {
                 onPressInBox={startHoldSelect}
                 onPressOutBox={cancelHoldSelect}
                 showLabels={showLabels}
+                holdMs={HOLD_MS}
               />
 
               <Controls

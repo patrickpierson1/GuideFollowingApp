@@ -4,10 +4,12 @@ import logging
 import threading
 from typing import Dict, List
 
-from fastapi import Body, FastAPI
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse
+
 from PIL import Image, ImageOps
 from ultralytics import YOLO
+import datetime
 
 # Run with:
 # uvicorn backend:app --reload --host 0.0.0.0 --port 8000 --no-access-log
@@ -19,7 +21,7 @@ app = FastAPI()
 # --- Detection config you can tweak ---
 PERSON_CLASS_ID = 0      # 0 = "person" in COCO
 MIN_CONFIDENCE = 0.6     # raise to reduce false positives (e.g. 0.7)
-MIN_REL_AREA = 0.0       # e.g. 0.01 to drop tiny boxes (<1% of image)
+MIN_REL_AREA = 0.01       # e.g. 0.01 to drop tiny boxes (<1% of image)
 # --------------------------------------
 # Preload available models so swapping is cheap.
 MODEL_FILES = {
@@ -114,21 +116,22 @@ class SimpleTracker:
 tracker = SimpleTracker(iou_thresh=0.3, max_missed=10)
 tracker_lock = threading.Lock()
 
-
 @app.post("/detect")
-async def detect(payload: dict = Body(...)):
-    model_key = payload.get("model", "n")
-    model = MODELS.get(model_key, MODELS["m"])
+async def detect(
+    image: UploadFile = File(...),
+    model: str = Form("n"),
+):
 
-    image_b64 = payload.get("image")
-    if not image_b64:
-        return JSONResponse({"error": "no image"}, status_code=400)
+    model_key = model or "n"
+    yolo = MODELS.get(model_key, MODELS["n"])
 
-    # Decode base64
+    # Read uploaded file bytes
     try:
-        data = base64.b64decode(image_b64)
+        data = await image.read()
+        if not data:
+            return JSONResponse({"error": "empty image"}, status_code=400)
     except Exception:
-        return JSONResponse({"error": "invalid image"}, status_code=400)
+        return JSONResponse({"error": "invalid upload"}, status_code=400)
 
     # Open + normalize EXIF orientation so portrait/landscape pixels are consistent
     try:
@@ -140,7 +143,7 @@ async def detect(payload: dict = Body(...)):
     w, h = img.size
     img_area = float(w * h)
 
-    results = model(
+    results = yolo(
         img,
         classes=[PERSON_CLASS_ID],
         conf=MIN_CONFIDENCE,
@@ -161,7 +164,6 @@ async def detect(payload: dict = Body(...)):
             if MIN_REL_AREA > 0.0 and (area / img_area) < MIN_REL_AREA:
                 continue
 
-            # Standard normalized coords (no swapping)
             detections.append(
                 {
                     "x1": x1 / w,
@@ -175,7 +177,6 @@ async def detect(payload: dict = Body(...)):
     with tracker_lock:
         tracked = tracker.update(detections)
 
-    # CRITICAL: return the exact processed image dimensions used for normalization
     return {"count": len(tracked), "boxes": tracked, "img_w": w, "img_h": h}
 
 
