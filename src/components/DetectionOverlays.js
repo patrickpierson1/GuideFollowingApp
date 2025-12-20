@@ -14,6 +14,7 @@ export function DetectionOverlays({
   frameSize,
   onPressInBox,
   onPressOutBox,
+  showLabels = false,
 }) {
   if (!isReadyToDraw) return null;
 
@@ -54,7 +55,7 @@ export function DetectionOverlays({
 
           return (
             <View key={key}>
-              {conf !== null && (
+              {showLabels && conf !== null && (
                 <Text
                   style={[
                     styles.confidenceText,

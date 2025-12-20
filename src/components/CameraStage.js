@@ -10,6 +10,7 @@ export function CameraStage({
   zoom,
   onLayout,
   children,
+  flashMode,
 }) {
   return (
     <View style={styles.cameraWrapper} onLayout={onLayout}>
@@ -19,6 +20,7 @@ export function CameraStage({
         style={StyleSheet.absoluteFill}
         facing={facing}
         zoom={zoom}
+        enableTorch={flashMode}
       />
       {children}
     </View>

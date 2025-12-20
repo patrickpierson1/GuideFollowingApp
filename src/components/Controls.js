@@ -10,7 +10,16 @@ export function Controls({
   onToggleFacing,
   onStopFollowing,
   onToggleStreaming,
+  onToggleSettings,
+  onToggleFlash,
+  showFlash = false,
+  flashMode = 'off',
 }) {
+  const flashIcon =
+    flashMode === true
+      ? require('../../assets/icons8-flash-on-50.png')
+      : require('../../assets/icons8-flash-off-50.png');
+
   return (
     <>
       {/* camera switch button */}
@@ -21,8 +30,15 @@ export function Controls({
         />
       </TouchableOpacity>
 
+      {/* flash button */}
+      {showFlash && (
+        <TouchableOpacity style={styles.flashButton} onPress={onToggleFlash}>
+          <Image source={flashIcon} style={styles.flashIcon} />
+        </TouchableOpacity>
+      )}
+
       {/* settings button (no-op like before) */}
-      <TouchableOpacity style={styles.settingsButton}>
+      <TouchableOpacity style={styles.settingsButton} onPress={onToggleSettings}>
         <Image
           source={require('../../assets/icons8-setting-50.png')}
           style={styles.settingsIcon}

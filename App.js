@@ -1,7 +1,7 @@
 import 'react-native-gesture-handler';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { Button, Text, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Button, DevSettings, Text, View } from 'react-native';
 import { useCameraPermissions } from 'expo-camera';
 import {
   GestureHandlerRootView,
@@ -9,10 +9,11 @@ import {
   GestureDetector,
 } from 'react-native-gesture-handler';
 
-import { API_BASE } from './src/config/api';
+import { API_HOST, API_PORT, buildApiBase } from './src/config/api';
 import { CameraStage } from './src/components/CameraStage';
 import { DetectionOverlays } from './src/components/DetectionOverlays';
 import { Controls } from './src/components/Controls';
+import { SettingsModal } from './src/components/SettingsModal';
 import { styles } from './src/styles/appStyles';
 import { useHoldSelect } from './src/hooks/useHoldSelect';
 import { clamp } from './src/utils/clamp';
@@ -27,7 +28,7 @@ export default function App() {
   const [facing, setFacing] = useState('back'); // 'front' | 'back'
   const [zoom, setZoom] = useState(0); // [0..1]
   const zoomRef = useRef(0);
-
+  const [flashMode, setFlashMode] = useState(false); // false | true
   const [status, setStatus] = useState('Searching.');
   const [boxes, setBoxes] = useState([]);
 
@@ -39,6 +40,15 @@ export default function App() {
   const [streaming, setStreaming] = useState(false);
   const intervalRef = useRef(null);
   const captureInProgress = useRef(false);
+  const [modelSize, setModelSize] = useState('n'); // 'n' | 'm' | 'x'
+  const [apiHost, setApiHost] = useState(API_HOST);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showLabels, setShowLabels] = useState(false);
+
+  const apiBase = useMemo(
+    () => buildApiBase(apiHost.trim() || API_HOST, API_PORT),
+    [apiHost]
+  );
 
   // state machine
   const [mode, setMode] = useState('searching'); // 'searching' | 'following'
@@ -154,10 +164,41 @@ export default function App() {
   const toggleFacing = () => {
     cancelHoldSelect();
     setFacing((prev) => (prev === 'front' ? 'back' : 'front'));
+    setFlashMode(false);
     setMode('searching');
     setSelectedId(null);
     setMissingFrames(0);
     setStatus('Searching.');
+  };
+
+  const toggleFlash = () => {
+    setFlashMode((prev) => (prev === false ? true : false));
+  };
+
+  const toggleSettings = () => {
+    setShowSettings((prev) => !prev);
+  };
+
+  const clearBackendIds = async () => {
+    try {
+      const res = await fetch(`${apiBase}/reset-tracker`, { method: 'POST' });
+      if (!res.ok) {
+        const txt = await res.text();
+        console.log('Clear tracker error:', txt);
+        setStatus(`Backend error: ${res.status}`);
+        return;
+      }
+      setStatus('Backend IDs cleared');
+    } catch (err) {
+      console.log('Clear tracker error:', err);
+      setStatus(`Error: ${err.message}`);
+    }
+  };
+
+  const restartApp = () => {
+    if (DevSettings && typeof DevSettings.reload === 'function') {
+      DevSettings.reload();
+    }
   };
 
   // -------------------------
@@ -168,6 +209,7 @@ export default function App() {
     if (captureInProgress.current) return;
     if (!streaming) return;
     if (!permission?.granted) return;
+    const REQUEST_TIMEOUT_MS = 4000;
 
     try {
       captureInProgress.current = true;
@@ -184,11 +226,15 @@ export default function App() {
         return;
       }
 
-      const res = await fetch(`${API_BASE}/detect`, {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+      const res = await fetch(`${apiBase}/detect`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: photo.base64 }),
-      });
+        body: JSON.stringify({ image: photo.base64, model: modelSize }),
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeoutId));
 
       if (!res.ok) {
         const text = await res.text();
@@ -216,13 +262,19 @@ export default function App() {
       }
     } catch (err) {
       console.log('Detect error:', err);
-      setStatus(`Error: ${err.message}`);
+      if (err.name === 'AbortError') {
+        setStatus('Network timeout; check IP');
+      } else {
+        setStatus(`Network error: ${err.message}`);
+      }
     } finally {
       captureInProgress.current = false;
     }
   };
 
   useEffect(() => {
+    const intervalMs = modelSize === 'm' ? 200 : modelSize === 'x' ? 500 : 50;
+
     if (!streaming || !permission?.granted) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -233,7 +285,7 @@ export default function App() {
 
     intervalRef.current = setInterval(() => {
       captureAndDetect();
-    }, 100);
+    }, intervalMs);
 
     return () => {
       if (intervalRef.current) {
@@ -241,8 +293,7 @@ export default function App() {
         intervalRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [streaming, permission?.granted]);
+  }, [streaming, permission?.granted, modelSize, apiBase]);
 
   const isReadyToDraw =
     streaming &&
@@ -274,13 +325,13 @@ export default function App() {
     content = (
       <View style={styles.container}>
         <GestureDetector gesture={pinchGesture}>
-          {/* IMPORTANT: wrap in a native View to give RNGH a concrete view */}
           <View style={{ flex: 1 }}>
             <CameraStage
               cameraRef={cameraRef}
               facing={facing}
               zoom={zoom}
               onLayout={(e) => setPreviewLayout(e.nativeEvent.layout)}
+              flashMode={flashMode}
             >
               <DetectionOverlays
                 isReadyToDraw={isReadyToDraw}
@@ -292,6 +343,7 @@ export default function App() {
                 frameSize={frameSize}
                 onPressInBox={startHoldSelect}
                 onPressOutBox={cancelHoldSelect}
+                showLabels={showLabels}
               />
 
               <Controls
@@ -299,12 +351,28 @@ export default function App() {
                 status={status}
                 streaming={streaming}
                 onToggleFacing={toggleFacing}
+                onToggleFlash={toggleFlash}
+                showFlash={facing === 'back'}
+                flashMode={flashMode}
                 onStopFollowing={stopFollowing}
                 onToggleStreaming={toggleStreaming}
+                onToggleSettings={toggleSettings}
               />
             </CameraStage>
           </View>
         </GestureDetector>
+        <SettingsModal
+          visible={showSettings}
+          model={modelSize}
+          onSelectModel={(m) => setModelSize(m)}
+          apiHost={apiHost}
+          onChangeApiHost={setApiHost}
+          showLabels={showLabels}
+          onToggleLabels={() => setShowLabels((prev) => !prev)}
+          onClearIds={clearBackendIds}
+          onRestartApp={restartApp}
+          onClose={toggleSettings}
+        />
       </View>
     );
   }

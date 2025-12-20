@@ -21,8 +21,13 @@ PERSON_CLASS_ID = 0      # 0 = "person" in COCO
 MIN_CONFIDENCE = 0.6     # raise to reduce false positives (e.g. 0.7)
 MIN_REL_AREA = 0.0       # e.g. 0.01 to drop tiny boxes (<1% of image)
 # --------------------------------------
-
-model = YOLO("models/yolov8m.pt")
+# Preload available models so swapping is cheap.
+MODEL_FILES = {
+    "n": "models/yolov8n.pt",
+    "m": "models/yolov8m.pt",
+    "x": "models/yolov8x.pt",
+}
+MODELS = {k: YOLO(path) for k, path in MODEL_FILES.items()}
 
 
 def _iou(a: Dict, b: Dict) -> float:
@@ -112,6 +117,9 @@ tracker_lock = threading.Lock()
 
 @app.post("/detect")
 async def detect(payload: dict = Body(...)):
+    model_key = payload.get("model", "n")
+    model = MODELS.get(model_key, MODELS["m"])
+
     image_b64 = payload.get("image")
     if not image_b64:
         return JSONResponse({"error": "no image"}, status_code=400)
@@ -169,3 +177,11 @@ async def detect(payload: dict = Body(...)):
 
     # CRITICAL: return the exact processed image dimensions used for normalization
     return {"count": len(tracked), "boxes": tracked, "img_w": w, "img_h": h}
+
+
+@app.post("/reset-tracker")
+async def reset_tracker():
+    with tracker_lock:
+        tracker.tracks.clear()
+        tracker.next_id = 1
+    return {"status": "reset"}
