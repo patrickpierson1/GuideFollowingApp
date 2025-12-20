@@ -134,12 +134,6 @@ export default function App() {
   // -------------------------
   // Actions
   // -------------------------
-  const stopFollowing = () => {
-    setMode('searching');
-    setSelectedId(null);
-    setMissingFrames(0);
-    setStatus('Searching.');
-  };
 
   const toggleStreaming = () => {
     setStreaming((prev) => {
@@ -195,6 +189,18 @@ export default function App() {
     }
   };
 
+  const stopFollowing = async () => {
+    setMode('searching');
+    setSelectedId(null);
+    setMissingFrames(0);
+    setStatus('Searching.');
+    try {
+      await clearBackendIds();
+    } catch {
+      // clearBackendIds already sets status on error
+    }
+  };
+  
   const restartApp = () => {
     if (DevSettings && typeof DevSettings.reload === 'function') {
       DevSettings.reload();
