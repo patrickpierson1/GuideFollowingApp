@@ -7,7 +7,7 @@ from PIL import Image, ImageOps
 from ultralytics import YOLO
 
 # define the API endpoint for person detection
-async def detectPerson(
+async def Detect(
     image,
     model,
     MODELS,

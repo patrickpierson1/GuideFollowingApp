@@ -4,9 +4,10 @@ from typing import Optional
 
 from fastapi import FastAPI, UploadFile, File, Form
 from ultralytics import YOLO
-from src.utils.detect import detectPerson
-from src.utils.track import SimpleTracker
-from src.utils.guide import guide
+from detect import Detect
+from track import SimpleTracker
+from guide import guide
+import datetime
 
 # Run with: uvicorn backend:app --reload --host 0.0.0.0 --port 8000 --no-access-log
 
@@ -16,8 +17,8 @@ app = FastAPI()
 
 # --- Detection config you can tweak ---
 PERSON_CLASS_ID = 0      # 0 = "person" in COCO
-MIN_CONFIDENCE = 0.6     # raise to reduce false positives (e.g. 0.7)
-MIN_REL_AREA = 0.01       # e.g. 0.01 to drop tiny boxes (<1% of image)
+MIN_CONFIDENCE = 0.7     # raise to reduce false positives (e.g. 0.7+ recommended to reduce ID swaps)
+MIN_REL_AREA = 0.01      # e.g. 0.01 to drop tiny boxes (<1% of image)
 # --------------------------------------
 
 # Preload available models so swapping is cheap.
@@ -29,7 +30,14 @@ MODEL_FILES = {
 MODELS = {k: YOLO(path) for k, path in MODEL_FILES.items()}
 
 # Initialize tracker and lock for thread safety
-tracker = SimpleTracker(iou_thresh=0.25, max_missed=5)
+tracker = SimpleTracker(
+    track_high_thresh=0.45,
+    track_low_thresh=0.2,
+    new_track_thresh=0.45,
+    match_thresh=0.85,
+    track_buffer=20,
+    fps=30.0,
+)
 tracker_lock = threading.Lock()
 
 # Define the route for the detection endpoint
@@ -41,16 +49,19 @@ async def detect(
     guide_uid: Optional[int] = Form(None),
 ):
     # Run detection using YOLO model
-    detections, w, h = await detectPerson(image, model, MODELS, PERSON_CLASS_ID, MIN_CONFIDENCE, MIN_REL_AREA)
+    detections, w, h = await Detect(image, model, MODELS, PERSON_CLASS_ID, MIN_CONFIDENCE, MIN_REL_AREA)
     
     # Track detected persons using the SimpleTracker
     with tracker_lock:
-        tracked = tracker.update(detections)
+        tracked = tracker.update(detections, (w, h))
 
-    if following and guide_uid is not None:
-        guide(tracked, guide_uid)
+    # if following and guide_uid is not None:
+    #     guide(tracked, guide_uid)
     
     # Return the count of tracked persons, their bounding boxes, and image dimensions
+    if len(tracked) > 15:
+        await reset_tracker()
+        
     return {
         "count": len(tracked),
         "boxes": tracked,
@@ -64,6 +75,5 @@ async def reset_tracker():
 
     # Reset the tracker to clear all tracks and reset the next ID
     with tracker_lock:
-        tracker.tracks.clear()
-        tracker.next_id = 1
+        tracker.reset()
     return {"status": "reset"}
