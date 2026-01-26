@@ -2,13 +2,21 @@ import SwiftUI
 import AVFoundation
 
 struct CameraView: View{
-    @StateObject private var cameraManager = CameraManager()
+    @StateObject private var cameraManager = CameraManager()    
+    @StateObject private var humanDetection = HumanDetection()
     
     var body: some View{
         ZStack{
             // Camera feed as the background for the app
             CameraPreviewView(previewLayer: cameraManager.previewLayer)
                 .ignoresSafeArea()
+            
+
+            // JUST TEMPORARY FOR TESTING HOW ACCURATE THE HUMAN DETECTION IS
+            Text("\(humanDetection.peopleCount)")
+                .font(.system(size: 100, weight: .bold))
+                .foregroundColor(.white)
+                .shadow(color: .black, radius: 5)
             
             // UI overlay
             VStack{
@@ -67,6 +75,11 @@ struct CameraView: View{
         .onAppear{
             cameraManager.setupCamera()
             cameraManager.startSession()
+
+            // Anytime we receive a frame run the human detection on it
+            cameraManager.onFrameCaptured={pixelBuffer in
+                humanDetection.detectPeople(in: pixelBuffer)
+            }
         }
         // If the app is closed shut off the camera
         .onDisappear{
