@@ -4,6 +4,7 @@ import AVFoundation
 struct CameraView: View{
     @StateObject private var cameraManager = CameraManager()    
     @StateObject private var humanDetection = HumanDetection()
+    @State private var isTrackingActive = false
     
     var body: some View{
         ZStack{
@@ -13,11 +14,13 @@ struct CameraView: View{
             
 
             // JUST TEMPORARY FOR TESTING HOW ACCURATE THE HUMAN DETECTION IS
-            Text("\(humanDetection.peopleCount)")
-                .font(.system(size: 100, weight: .bold))
-                .foregroundColor(.white)
-                .shadow(color: .black, radius: 5)
-            
+            if isTrackingActive{
+                Text("\(humanDetection.peopleCount)")
+                    .font(.system(size: 100, weight: .bold))
+                    .foregroundColor(.white)
+                    .shadow(color: .black, radius: 5)
+            }
+
             // UI overlay
             VStack{
                 Spacer()
@@ -40,15 +43,23 @@ struct CameraView: View{
                     
                     // Start/stop tracking button
                     Button(action: {
-                        // IMPLEMENT LATER: actually have the tracking button do something
-                        print("Tracking toggled")
+                        isTrackingActive.toggle()
+                        if isTrackingActive{
+                            // Anytime we receive a frame run the human detection on it
+                            cameraManager.onFrameCaptured = { pixelBuffer in
+                                humanDetection.detectPeople(in: pixelBuffer)
+                            }
+                        }else{
+                            cameraManager.onFrameCaptured = nil
+                            humanDetection.peopleCount = 0
+                        }
                     }){
-                        Text("Start Tracking")
+                        Text(isTrackingActive ? "Stop Tracking" :"Start Tracking" )
                             .font(.headline)
                             .foregroundColor(.white)
                             .padding(.horizontal, 30)
                             .padding(.vertical, 15)
-                            .background(Color.green)
+                            .background(isTrackingActive ? Color.red : Color.green)
                             .cornerRadius(25)
                     }
                     
@@ -75,11 +86,6 @@ struct CameraView: View{
         .onAppear{
             cameraManager.setupCamera()
             cameraManager.startSession()
-
-            // Anytime we receive a frame run the human detection on it
-            cameraManager.onFrameCaptured={pixelBuffer in
-                humanDetection.detectPeople(in: pixelBuffer)
-            }
         }
         // If the app is closed shut off the camera
         .onDisappear{
