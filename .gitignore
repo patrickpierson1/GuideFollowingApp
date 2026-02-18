@@ -48,3 +48,23 @@ yolov8x.pt
 yolov8m.pt
 yolov8n.pt
 tf_export_env
+
+
+# Xcode
+swift-app/Build/
+swift-app/DerivedData/
+swift-app/xcuserdata/
+swift-app/*.xcworkspace/xcuserdata/
+
+# macOS
+.DS_Store
+
+# Swift Package Manager
+swift-app/.swiftpm/
+
+# Python virtual environment
+backend/venv/
+*.pyc
+*.pyo
+*.pyd
+.Python
