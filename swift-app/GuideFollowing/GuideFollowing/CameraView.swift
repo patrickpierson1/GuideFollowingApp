@@ -6,6 +6,7 @@ struct CameraView: View{
     @StateObject private var networkManager = NetworkManager()
     @State private var isTrackingActive = false
     @State private var selectedPersonID: Int? = nil
+    @State private var ip_menu: Bool = false
 
     // Check if the selected person is still being detected
     private var isPersonStillTracked: Bool{
@@ -91,6 +92,16 @@ struct CameraView: View{
                 HStack{
                     // Settings button (Going to change this later not a fan of it)
                     Menu{
+                 
+                            Button("edit ip") {
+                                ip_menu = true
+                            }
+                            
+                            // If this is selected while we are tracking someone we stop tracking that person
+                            Button("Reset Tracker"){
+                                networkManager.resetTracker()
+                                selectedPersonID = nil
+                            }
                         Section{
                             Picker("", selection: $networkManager.selectedModel){
                                 Text("Extra Large").tag("x")
@@ -100,6 +111,7 @@ struct CameraView: View{
                             Text("YOLO Model")
                                 .font(.headline)
                         }
+
                     }label:{
                         Image(systemName: "gearshape.fill")
                             .font(.title2)
@@ -108,7 +120,9 @@ struct CameraView: View{
                             .background(Color.black.opacity(0.5))
                             .clipShape(Circle())
                     }
-
+                    .sheet(isPresented: $ip_menu) {
+                        SettingsView(networkManager:networkManager)
+                    }
                     Spacer()
 
                     // Start/Stop tracking button

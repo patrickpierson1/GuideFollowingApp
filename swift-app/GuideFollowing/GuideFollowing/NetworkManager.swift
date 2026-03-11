@@ -30,10 +30,11 @@ class NetworkManager: ObservableObject{
     @Published var detectedPeople: [DetectedPerson] = []
     @Published var selectedModel: String = "n"
     
-    // Backend server address (WILL NEED TO CHANGE TO THE PI'S LATER)
-    private let baseURL = "http://192.168.0.102:8000"
+    // Backend server address (WILL NEED TO CHANGE TO THE PI'S LATER, currently is the labs IP)
+    @Published var baseURL: String = "http://172.30.109.72:8000"
     private var isSending = false
     private var isActive = false
+    @Published var connectionType: String = "wifi"
     
     func sendFrame(_ pixelBuffer: CVPixelBuffer){
         // If we are already in the process of sending a frame or tracking has stopped ignore this frame
@@ -162,6 +163,14 @@ class NetworkManager: ObservableObject{
         isActive = false
         DispatchQueue.main.async{
             self.detectedPeople = []
+        }
+    }
+    
+    func updateBaseURL(){
+        if connectionType == "wifi"{
+            baseURL = "http://172.30.109.72:8000"
+        }else{
+            baseURL = "https://:8000"
         }
     }
 }
