@@ -92,16 +92,20 @@ struct CameraView: View{
                 HStack{
                     // Settings button (Going to change this later not a fan of it)
                     Menu{
-                 
-                            Button("edit ip") {
+                        Section{
+                            Button("Edit IP") {
                                 ip_menu = true
                             }
-                            
+                        }
+                        
+                        Section{
                             // If this is selected while we are tracking someone we stop tracking that person
                             Button("Reset Tracker"){
                                 networkManager.resetTracker()
                                 selectedPersonID = nil
                             }
+                        }
+                        
                         Section{
                             Picker("", selection: $networkManager.selectedModel){
                                 Text("Extra Large").tag("x")
@@ -122,6 +126,7 @@ struct CameraView: View{
                     }
                     .sheet(isPresented: $ip_menu) {
                         SettingsView(networkManager:networkManager)
+                            .presentationDetents([.medium])
                     }
                     Spacer()
 
@@ -130,6 +135,7 @@ struct CameraView: View{
                         isTrackingActive.toggle()
                         if isTrackingActive{
                             // Start sending frames to the backend
+                            networkManager.resetTracker()
                             networkManager.startTracking()
                             cameraManager.onFrameCaptured = { pixelBuffer in
                                 networkManager.sendFrame(pixelBuffer)
