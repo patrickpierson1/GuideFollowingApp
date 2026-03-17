@@ -3,10 +3,10 @@ import threading
 from typing import Optional
 from fastapi import FastAPI, UploadFile, File, Form
 from ultralytics import YOLO
-from detect import Detect
-from track import SimpleTracker
-from guide import guide
-
+from .ImageProcessing.detect import Detect
+from .ImageProcessing.track import SimpleTracker
+from .ImageProcessing.guide import guide
+from .Controls.Connect import connect
 # Run with: uvicorn backend:app --reload --host 0.0.0.0 --port 8000 --no-access-log
 
 # Suppress ultralytics logging and start FastAPI server
@@ -38,6 +38,13 @@ tracker = SimpleTracker(
 )
 tracker_lock = threading.Lock()
 
+global joystick_x, joystick_y, rnet_threads_running
+joystick_x = 0
+joystick_y = 0
+rnet_threads_running = True
+
+connect()
+
 # Define the route for the detection endpoint
 @app.post("/detect")
 async def detect(
@@ -53,8 +60,10 @@ async def detect(
     with tracker_lock:
         tracked = tracker.update(detections, (w, h))
     
-    # if following and guide_uid is not None:
-    #     guide(tracked, guide_uid)
+    if following and guide_uid is not None:
+        res = guide(tracked, guide_uid)
+        if res is not None:
+            joystick_x, joystick_y = res
     
     # Return the count of tracked persons, their bounding boxes, and image dimensions
     if len(tracked) > 15:

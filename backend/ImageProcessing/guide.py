@@ -17,9 +17,6 @@ def guide(tracked, guide_uid):
 
     # Use the horizontal center of the bounding box to decide direction
     center_x = (target['x1'] + target['x2']) / 2
+    center_y = (target['y1'] + target['y2']) / 2
 
-    if center_x > 0.5 + delta:
-        return "right"
-    if center_x < 0.5 - delta:
-        return "left"
-    return "middle"
+    return center_x, center_y
