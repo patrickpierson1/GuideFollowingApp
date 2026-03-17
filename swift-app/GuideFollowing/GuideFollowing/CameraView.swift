@@ -55,6 +55,7 @@ struct CameraView: View{
                             }else{
                                 selectedPersonID = person.id
                             }
+                            networkManager.setTrackedPersonID(isTrackingActive ? selectedPersonID : nil)
                         }
                     }
                 }
@@ -103,6 +104,7 @@ struct CameraView: View{
                             Button("Reset Tracker"){
                                 networkManager.resetTracker()
                                 selectedPersonID = nil
+                                networkManager.setTrackedPersonID(nil)
                             }
                         }
                         
@@ -137,6 +139,7 @@ struct CameraView: View{
                             // Start sending frames to the backend
                             networkManager.resetTracker()
                             networkManager.startTracking()
+                            networkManager.setTrackedPersonID(selectedPersonID)
                             cameraManager.onFrameCaptured = { pixelBuffer in
                                 networkManager.sendFrame(pixelBuffer)
                             }
@@ -145,6 +148,7 @@ struct CameraView: View{
                             cameraManager.onFrameCaptured = nil
                             networkManager.stopTracking()
                             selectedPersonID = nil
+                            networkManager.setTrackedPersonID(nil)
                             networkManager.resetTracker()
                         }
                     }){

@@ -4,7 +4,11 @@ import termios
 import tty
 import select
 from time import time
-import Shared
+
+try:
+    from . import Shared
+except ImportError:
+    import Shared
 
 ARROW_HOLD_TIME = 0.18
 

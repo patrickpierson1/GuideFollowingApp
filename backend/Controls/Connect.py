@@ -2,10 +2,16 @@ import sys
 import socket
 import threading
 from time import sleep, time
-from can2RNET import cansend, opencansocket
-from Inject import inject, getJoystickID
-from KeyboardCtrl import keyboard_control
-import Shared
+try:
+    from .can2RNET import cansend, opencansocket
+    from .Inject import inject, getJoystickID
+    from .KeyboardCtrl import keyboard_control
+    from . import Shared
+except ImportError:
+    from can2RNET import cansend, opencansocket
+    from Inject import inject, getJoystickID
+    from KeyboardCtrl import keyboard_control
+    import Shared
 
 def dec2hex(dec, hexlen):
     h = hex(int(dec))[2:]

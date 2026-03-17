@@ -15,7 +15,7 @@ Backend (FastAPI + YOLO) setup (GitBash)
 3) Install dependencies (force wheels to avoid compiling numpy/torch):
    - `python -m pip install --only-binary=:all: numpy==1.26.4`
    - CPU PyTorch wheels: `python -m pip install --only-binary=:all: torch torchvision torchaudio`
-   - App deps: `python -m pip install fastapi uvicorn ultralytics pillow`
+   - App deps: `python -m pip install fastapi uvicorn ultralytics pillow python-multipart`
    (If you prefer GPU and have CUDA, use the wheel index from pytorch.org.)
 4) Run the backend (new terminal with the venv activated):
    - `uvicorn backend:app --reload --host 0.0.0.0 --port 8000`
@@ -77,5 +77,4 @@ Running both together (iOS Swift App + Backend)
 3) Open the app on your iPhone
 4) in the app go to Settings -> Edit IP
 5) Enter your computers local IP address
-
 

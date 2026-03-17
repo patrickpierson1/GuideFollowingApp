@@ -1,7 +1,12 @@
 import socket
 from time import time
-from can2RNET import cansend, dissect_frame, build_frame
-import Shared
+
+try:
+    from .can2RNET import cansend, dissect_frame, build_frame
+    from . import Shared
+except ImportError:
+    from can2RNET import cansend, dissect_frame, build_frame
+    import Shared
 
 def dec2hex(dec, hexlen):
     h = hex(int(dec))[2:]

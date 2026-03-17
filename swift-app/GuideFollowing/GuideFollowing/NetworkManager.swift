@@ -29,6 +29,7 @@ struct BoxData: Codable, Sendable{
 class NetworkManager: ObservableObject{
     @Published var detectedPeople: [DetectedPerson] = []
     @Published var selectedModel: String = "n"
+    @Published var trackedPersonID: Int? = nil
     
     // Backend server address (WILL NEED TO CHANGE TO THE PI'S LATER, currently is the labs IP)
     @Published var baseURL: String = "http://172.30.109.72:8000"
@@ -121,6 +122,7 @@ class NetworkManager: ObservableObject{
     private func buildRequest(jpegData: Data, boundary: String) -> Data{
         var body = Data()
         let boundaryPrefix = "--\(boundary)\r\n"
+        let isFollowing = trackedPersonID != nil
         
         // Image field for the request
         body.append(boundaryPrefix.data(using: .utf8)!)
@@ -137,7 +139,13 @@ class NetworkManager: ObservableObject{
         // Following field for when we are following someone
         body.append(boundaryPrefix.data(using: .utf8)!)
         body.append("Content-Disposition: form-data; name=\"following\"\r\n\r\n".data(using: .utf8)!)
-        body.append("false\r\n".data(using: .utf8)!)
+        body.append("\(isFollowing)\r\n".data(using: .utf8)!)
+
+        if let trackedPersonID{
+            body.append(boundaryPrefix.data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"guide_uid\"\r\n\r\n".data(using: .utf8)!)
+            body.append("\(trackedPersonID)\r\n".data(using: .utf8)!)
+        }
         
         // Close the request
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)
@@ -161,9 +169,14 @@ class NetworkManager: ObservableObject{
     // Stop processing frames and clear all boxes from the screen
     func stopTracking(){
         isActive = false
+        trackedPersonID = nil
         DispatchQueue.main.async{
             self.detectedPeople = []
         }
+    }
+
+    func setTrackedPersonID(_ id: Int?){
+        trackedPersonID = id
     }
     
     func updateBaseURL(){
