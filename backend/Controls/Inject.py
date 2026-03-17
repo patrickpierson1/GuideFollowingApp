@@ -1,31 +1,45 @@
+import socket
 from time import time
-from can2RNET.can2RNET import cansend, dissect_frame, build_frame
+from can2RNET import cansend, dissect_frame, build_frame
+import Shared
 
 def dec2hex(dec, hexlen):
     h = hex(int(dec))[2:]
     return ('0' * hexlen + h)[-hexlen:]
 
-def inject(joystickID):
-    global joystick_x, joystick_y
-    global rnet_threads_running
-    global can_socket
+def inject(can_socket, joystickID):
     raw = build_frame(joystickID + "#0000")
-    while rnet_threads_running:
-        cf, _ = can_socket.recvfrom(16)
+
+    while not Shared.stop_event.is_set():
+        try:
+            cf, _ = can_socket.recvfrom(16)
+        except socket.timeout:
+            continue
+        except OSError:
+            break
+
         if cf == raw:
             cansend(
                 can_socket,
-                joystickID + '#' + dec2hex(joystick_x, 2) + dec2hex(joystick_y, 2)
+                joystickID + '#' +
+                dec2hex(Shared.joystick_x, 2) +
+                dec2hex(Shared.joystick_y, 2)
             )
 
-def getJoystickID(start_time):
-    global can_socket
-    while True:
-        cf, _ = can_socket.recvfrom(16)
+def getJoystickID(can_socket, start_time):
+    while time() < start_time and not Shared.stop_event.is_set():
+        try:
+            cf, _ = can_socket.recvfrom(16)
+        except socket.timeout:
+            continue
+        except OSError:
+            return "Err!"
+
         frame = dissect_frame(cf)
         frameid = frame.split('#')[0]
+
         if frameid.startswith("020"):
             return frameid
-        if time() > start_time:
-            print("JoyFrame wait timed out")
-            return "Err!"
+
+    print("JoyFrame wait timed out")
+    return "Err!"

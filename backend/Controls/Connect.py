@@ -1,48 +1,68 @@
 import sys
+import socket
 import threading
 from time import sleep, time
-from can2RNET.can2RNET import cansend, opencansocket
+from can2RNET import cansend, opencansocket
 from Inject import inject, getJoystickID
 from KeyboardCtrl import keyboard_control
-
-joystick_x = 0x00
-joystick_y = 0x00
-rnet_threads_running = True
+import Shared
 
 def dec2hex(dec, hexlen):
     h = hex(int(dec))[2:]
     return ('0' * hexlen + h)[-hexlen:]
 
-def RNETsetSpeedRange(speed_range):
+def RNETsetSpeedRange(can_socket, speed_range):
     cansend(can_socket, '0A040100#' + dec2hex(speed_range, 2))
 
 def connect():
-    global can_socket
     can_socket = opencansocket(0)
-    if (can_socket == ''):
-        print ('Cannot open CAN interface, exiting.')
+    if can_socket == '':
+        print('Cannot open CAN interface, exiting.')
         sys.exit()
-    print("CAN socket opened successfully.")
 
+    can_socket.settimeout(0.1)
+
+    print("CAN socket opened successfully.")
     print("Waiting for RNET-Joystick frame")
-    joy_id = getJoystickID(time() + 0.20)
+
+    joy_id = getJoystickID(can_socket, time() + 0.20)
     if joy_id == "Err!":
+        can_socket.close()
         sys.exit()
 
     print("Found:", joy_id)
-    RNETsetSpeedRange(0)
+    RNETsetSpeedRange(can_socket, 0)
 
-    threading.Thread(target=keyboard_control, daemon=True).start()
-    threading.Thread(target=inject, args=(joy_id,), daemon=True).start()
+    kb_thread = threading.Thread(target=keyboard_control)
+    inj_thread = threading.Thread(target=inject, args=(can_socket, joy_id))
+
+    kb_thread.start()
+    inj_thread.start()
 
     start = time()
-    while rnet_threads_running:
-        sleep(0.5)
-        print(f"{round(time()-start, 2)}s  X:{dec2hex(joystick_x,2)}  Y:{dec2hex(joystick_y,2)}")
 
-    print("Exiting")
+    try:
+        while not Shared.stop_event.is_set():
+            sleep(0.5)
+            print(
+                f"{round(time()-start, 2)}s  "
+                f"X:{dec2hex(Shared.joystick_x,2)}  "
+                f"Y:{dec2hex(Shared.joystick_y,2)}"
+            )
+    except KeyboardInterrupt:
+        print("\nStopping...")
+        Shared.stop_event.set()
+    finally:
+        Shared.stop_event.set()
+
+        try:
+            can_socket.close()
+        except Exception:
+            pass
+
+        kb_thread.join(timeout=1.0)
+        inj_thread.join(timeout=1.0)
+
+        print("Exiting cleanly")
 
 connect()
-
-
-
