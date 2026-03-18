@@ -11,6 +11,7 @@ except ImportError:
     import Shared
 
 ARROW_HOLD_TIME = 0.18
+KEYBOARD_COMMAND_HOLD_SECONDS = 0.25
 
 def read_available_stdin():
     data = ""
@@ -102,16 +103,18 @@ def keyboard_control():
 
             if left_active and not right_active:
                 x = 0x9D
+                y = 0x64
+
             elif right_active and not left_active:
                 x = 0x64
+                y = 0x64
 
             if up_active and not down_active:
                 y = 0x64
             elif down_active and not up_active:
                 y = 0x9D
 
-            Shared.joystick_x = x
-            Shared.joystick_y = y
+            Shared.set_joystick(x, y, hold_seconds=KEYBOARD_COMMAND_HOLD_SECONDS)
 
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)

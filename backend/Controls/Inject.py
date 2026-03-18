@@ -24,11 +24,12 @@ def inject(can_socket, joystickID):
             break
 
         if cf == raw:
+            joystick_x, joystick_y = Shared.get_joystick()
             cansend(
                 can_socket,
                 joystickID + '#' +
-                dec2hex(Shared.joystick_x, 2) +
-                dec2hex(Shared.joystick_y, 2)
+                dec2hex(joystick_x, 2) +
+                dec2hex(joystick_y, 2)
             )
 
 def getJoystickID(can_socket, start_time):
