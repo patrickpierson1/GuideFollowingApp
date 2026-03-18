@@ -1,40 +1,27 @@
-Project setup and run guide (Windows)
+Project setup and run guide
 ------------------------------------
 Prerequisites
 - Python 3.11.x (64-bit recommended; use a fresh venv for this project).
-- Node.js and npm (LTS recommended).
-- Expo CLI tooling (bundled with `npx expo`) and Expo Go installed on your iPhone for testing.
 - Git (optional, for version control).
 
 Backend (FastAPI + YOLO) setup (GitBash)
 1) From the `GuideFollowingApp` folder, create/activate a virtual environment:
-   - Create: `py -3.11 -m venv .venv`
-   - Activate: `source .venv/Scripts/activate`
+   - Create: `py -m venv .venv`
+   - Activate: `source .venv/bin/activate`
 2) Upgrade pip tooling:
    - `python -m pip install --upgrade pip setuptools wheel`
 3) Install dependencies (force wheels to avoid compiling numpy/torch):
    - `python -m pip install --only-binary=:all: numpy==1.26.4`
+   - `python -m pip install can`
+   - `python -m pip install can_utils`
    - CPU PyTorch wheels: `python -m pip install --only-binary=:all: torch torchvision torchaudio`
    - App deps: `python -m pip install fastapi uvicorn ultralytics pillow python-multipart`
    (If you prefer GPU and have CUDA, use the wheel index from pytorch.org.)
+5) Initalize the CAN bus and set bit rate to 125000
+   - `sudo /sbin/ip link set can0 up type can bitrate 125000`
 4) Run the backend (new terminal with the venv activated):
    - `uvicorn backend:app --reload --host 0.0.0.0 --port 8000`
    - The API will be available at `http://<your-lan-ip>:8000/detect`.
-Frontend (Expo) setup
-1) Install JS deps (in `GuideFollowingApp`):
-   - `npm install`
-   - If not already installed: `npx expo install expo-camera @react-native-community/slider`
-2) Run the Expo app (new terminal):
-   - `npx expo start`
-   - On iPhone, open Expo Go and scan the QR code. Make sure the phone and PC are on the same network.
-3) Update the backend URL in `App.js` to use your PC’s LAN IP (e.g., `http://192.168.x.x:8000/detect`).
-Running both together
-- Terminal 1: activate venv and start backend: `uvicorn backend:app --reload --host 0.0.0.0 --port 8000`
-- Terminal 2: start Expo: `npx expo start`
-- In the Expo app, take a photo; the app will POST it to `/detect` and display the person count from the backend response.
-Common tips
-- If you see numpy/torch trying to compile, verify you’re on Python 3.11 and using the `--only-binary=:all:` installs above.
-- Keep the venv activated whenever running or installing backend Python packages.
 
 Project setup and run guide (iOS Swift App)
 ------------------------------------
@@ -78,3 +65,23 @@ Running both together (iOS Swift App + Backend)
 4) in the app go to Settings -> Edit IP
 5) Enter your computers local IP address
 
+Project setup and run guide (ExpoGo App)
+------------------------------------
+Prerequisites
+- Node.js and npm (LTS recommended).
+- Expo CLI tooling (bundled with `npx expo`) and Expo Go installed on your iPhone for testing.
+
+1) Install JS deps (in `GuideFollowingApp`):
+   - `npm install`
+   - If not already installed: `npx expo install expo-camera @react-native-community/slider`
+2) Run the Expo app (new terminal):
+   - `npx expo start`
+   - On iPhone, open Expo Go and scan the QR code. Make sure the phone and PC are on the same network.
+3) Update the backend URL in `App.js` to use your PC’s LAN IP (e.g., `http://192.168.x.x:8000/detect`).
+Running both together
+- Terminal 1: activate venv and start backend: `uvicorn backend:app --reload --host 0.0.0.0 --port 8000`
+- Terminal 2: start Expo: `npx expo start`
+- In the Expo app, take a photo; the app will POST it to `/detect` and display the person count from the backend response.
+Common tips
+- If you see numpy/torch trying to compile, verify you’re on Python 3.11 and using the `--only-binary=:all:` installs above.
+- Keep the venv activated whenever running or installing backend Python packages.

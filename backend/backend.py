@@ -1,3 +1,4 @@
+# /backend/backend.py
 import logging
 import subprocess
 import sys
@@ -42,6 +43,8 @@ tracker = SimpleTracker(
     fps=30.0,
 )
 tracker_lock = threading.Lock()
+
+# Constants for joystick encoding and guiding behavior
 CONNECT_SCRIPT = Path(__file__).resolve().parent / "Controls" / "Connect.py"
 GUIDE_COMMAND_HOLD_SECONDS = 0.75
 GUIDE_DEADZONE = 0.05
@@ -50,11 +53,11 @@ JOYSTICK_POSITIVE_MAX = 0x64
 JOYSTICK_NEGATIVE_MAX = 0x9D
 JOYSTICK_NEGATIVE_MAGNITUDE = 0x100 - JOYSTICK_NEGATIVE_MAX
 
-
+# clamp a value to a specified range
 def clamp(value: float, minimum: float, maximum: float) -> float:
     return max(minimum, min(value, maximum))
 
-
+# encode a normalized axis value (-1.0 to 1.0) into a joystick byte (0x00 to 0xFF)
 def encode_axis(normalized_value: float) -> int:
     normalized_value = clamp(normalized_value, -1.0, 1.0)
 
@@ -67,12 +70,13 @@ def encode_axis(normalized_value: float) -> int:
     signed_value = -int(round(abs(normalized_value) * JOYSTICK_NEGATIVE_MAGNITUDE))
     return signed_value & 0xFF
 
-
+# convert target center coordinates to joystick commands
 def center_to_joystick(center_x: float, center_y: float) -> tuple[int, int]:
     normalized_x = (2.0 * center_x) - 1.0
     normalized_y = 1.0 - (2.0 * center_y)
     return encode_axis(normalized_x), encode_axis(normalized_y)
 
+# on startup, launch the Connect.py script as a subprocess to handle CAN communication and joystick control
 @app.on_event("startup")
 async def startup_event():
     if app.state.connect_process is None or app.state.connect_process.poll() is not None:
@@ -81,6 +85,7 @@ async def startup_event():
             cwd=str(CONNECT_SCRIPT.parent),
         )
 
+# on shutdown, terminate the Connect.py subprocess gracefully
 @app.on_event("shutdown")
 async def shutdown_event():
     process = app.state.connect_process
@@ -111,11 +116,14 @@ async def detect(
     # Track detected persons using the SimpleTracker
     with tracker_lock:
         tracked = tracker.update(detections, (w, h))
-    print()
+    
+    # If following mode is enabled and a guide_uid is provided
     if following and guide_uid is not None:
-        print(f"Attempting to guide to ID {guide_uid}...")
+        
+        # print(f"Attempting to guide to ID {guide_uid}...")
         target = guide(tracked, guide_uid, w, h)
         if target is not None:
+            # send joystick commands to guide towards the target center
             center_x, center_y, area = target
             joystick_x, joystick_y = center_to_joystick(center_x, center_y)
             if area < GUIDE_APPROACH_AREA_THRESHOLD:

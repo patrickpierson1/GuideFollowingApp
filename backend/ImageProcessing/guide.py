@@ -1,10 +1,13 @@
+# /backend/ImageProcessing/guide.py
+
+# find target id
 def find(tracked, guide_uid):
     for item in tracked:
         if item['id'] == guide_uid:
             return item
     return None
 
-
+# calculate joystick commands to guide towards the center of the target, with a simple proportional controller
 def guide(tracked, guide_uid, img_w, img_h):
     target = find(tracked, guide_uid)
 

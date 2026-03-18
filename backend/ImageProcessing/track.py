@@ -1,3 +1,4 @@
+# /backend/ImageProcessing/track.py
 # ByteTrack-backed tracker that keeps the same public API/outputs as the old IoU tracker.
 from types import SimpleNamespace
 from typing import Dict, List, Optional, Tuple
@@ -22,9 +23,8 @@ except Exception:
     except Exception as exc:  # pragma: no cover - handled at runtime
         raise ImportError(BYTE_IMPORT_ERROR) from exc
 
-
+# check if detections are normalized to (0,1)
 def _is_normalized(detections: List[Dict], img_w: float, img_h: float) -> bool:
-    """Check if all detection coordinates look normalized (<=1)."""
     if img_w <= 0.0 or img_h <= 0.0:
         return True
     for det in detections:
@@ -32,14 +32,10 @@ def _is_normalized(detections: List[Dict], img_w: float, img_h: float) -> bool:
             return False
     return True
 
-
+# convert detection dicts to ByteTrack's expected ndarray and report if they were normalized.
 def _prepare_detections(
     detections: List[Dict], img_w: float, img_h: float
 ) -> Tuple[np.ndarray, bool]:
-    """
-    Convert detection dicts to ByteTrack's expected ndarray and report if they were normalized.
-    ByteTrack expects [x1, y1, x2, y2, score, class] in absolute coordinates.
-    """
     if not detections:
         return np.empty((0, 6), dtype=np.float32), True
 
@@ -65,13 +61,8 @@ def _prepare_detections(
 
     return np.asarray(rows, dtype=np.float32), normalized
 
-
+# simple tracker using ByteTrack 
 class SimpleTracker:
-    """
-    Wrapper around ByteTrack that keeps the same update signature and output schema as the
-    previous IoU tracker. Call update(detections, (img_w, img_h)) to track across frames.
-    """
-
     def __init__(
         self,
         track_thresh: float = 0.25,
@@ -105,25 +96,22 @@ class SimpleTracker:
         self.tracks: List[Dict] = []  # last returned tracks for compatibility
         self._init_tracker()
 
+    # initialize the ByteTrack tracker instance
     def _init_tracker(self) -> None:
         if ByteTrackBase is not None:
             ByteTrackBase._count = 0  # reset global ID counter
         self._tracker = BYTETracker(self.args, frame_rate=self.fps)
 
+    # reset the tracker state and clear all tracks
     def reset(self) -> None:
-        """Clear internal state and reset IDs."""
         self._init_tracker()
         self.tracks.clear()
         self.next_id = 1
 
+    # update tracker with new detections and return the list of tracked objects with their IDs and scores
     def update(
         self, detections: List[Dict], img_size: Optional[Tuple[float, float]] = None
     ) -> List[Dict]:
-        """
-        Update tracker with detections for the current frame.
-        detections: list of {"x1","y1","x2","y2","conf"} in normalized or absolute coords.
-        img_size: optional (width, height) tuple for scaling normalized boxes to pixels.
-        """
         img_w, img_h = (float(img_size[0]), float(img_size[1])) if img_size else (1.0, 1.0)
         det_array, normalized = _prepare_detections(detections, img_w, img_h)
 

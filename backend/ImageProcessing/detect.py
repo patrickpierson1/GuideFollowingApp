@@ -1,4 +1,4 @@
-# src/utils/detect.py
+# /backend/ImageProcessing/detect.py
 import io
 from typing import Dict, List
 from fastapi import UploadFile, File, Form
