@@ -12,7 +12,7 @@ Week 1 4/5/2026-4/11/2026
 - Team Member: Joseph Loreen
     - Date: 4/8/2026
         - Goals: In lab testing the LiDAR.
-        - Start Time: 10:09
+        - Start Time: 10:09AM
         - End Time:
         - Duration:
         - Results:
@@ -24,9 +24,9 @@ Week 1 4/5/2026-4/11/2026
         - Duration:
         - Results:
 - Team Member: Patrick Pierson
-    - Date:
-        - Goals: 
-        - Start Time:
+    - Date: 4/8/2026
+        - Goals: Test in lab
+        - Start Time: 11:56AM
         - End Time:
         - Duration:
         - Results:
