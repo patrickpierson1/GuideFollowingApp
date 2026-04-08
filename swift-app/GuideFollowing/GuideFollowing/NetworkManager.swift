@@ -1,13 +1,15 @@
 import Foundation
+import AVFoundation
 import CoreVideo
 import UIKit
 import Combine
 
-// Detected person has 3 main properties: their ID, their coordinates, and the detection confidence
+// Detected person has 4 main properties: their ID, their coordinates, the detection confidence, and their distance (in meters) from the camera
 struct DetectedPerson: Identifiable, Sendable{
     let id: Int
     let x1, y1, x2, y2: CGFloat
     let conf: Float
+    let distance: Float?
 }
 
 // The response we get back from /detect on the backend
@@ -30,6 +32,7 @@ class NetworkManager: ObservableObject{
     @Published var detectedPeople: [DetectedPerson] = []
     @Published var selectedModel: String = "n"
     @Published var trackedPersonID: Int? = nil
+    var depthData: AVDepthData? = nil
     
     // Backend server address (WILL NEED TO CHANGE TO THE PI'S LATER, currently is the labs IP)
     @Published var baseURL: String = "http://172.30.109.72:8000"
@@ -110,7 +113,11 @@ class NetworkManager: ObservableObject{
                 
                 // Convert the backend boxes to our detected person formatting
                 let people = decoded.boxes.map{ box in
-                    DetectedPerson(id: box.id, x1: CGFloat(box.x1), y1: CGFloat(box.y1), x2: CGFloat(box.x2), y2: CGFloat(box.y2), conf: box.conf)
+                    // Calculate the center of the bounding box and get the Depth at the center
+                    let centerX = (box.x1+box.x2) / 2
+                    let centerY = (box.y1+box.y2) / 2
+                    let distance = getDepth(at: centerX, y: centerY)
+                    return DetectedPerson(id: box.id, x1: CGFloat(box.x1), y1: CGFloat(box.y1), x2: CGFloat(box.x2), y2: CGFloat(box.y2), conf: box.conf, distance: distance)
                 }
                 // Update the UI to draw the boxes
                 self.detectedPeople = people
@@ -118,7 +125,7 @@ class NetworkManager: ObservableObject{
         }.resume()
     }
     
-    // Builds the request body in multipart form format (like a web file upload)
+    // Build the request to send to the backend
     private func buildRequest(jpegData: Data, boundary: String) -> Data{
         var body = Data()
         let boundaryPrefix = "--\(boundary)\r\n"
@@ -146,7 +153,19 @@ class NetworkManager: ObservableObject{
             body.append("Content-Disposition: form-data; name=\"guide_uid\"\r\n\r\n".data(using: .utf8)!)
             body.append("\(trackedPersonID)\r\n".data(using: .utf8)!)
         }
-        
+
+        // Send distance(in meters) if we are following someone and have the depth data
+        if let trackedPersonID = trackedPersonID{
+            if let trackedPerson = detectedPeople.first(where:{$0.id == trackedPersonID}){
+                // Send the distance value if they have one
+                if let distance = trackedPerson.distance{
+                    body.append(boundaryPrefix.data(using: .utf8)!)
+                    body.append("Content-Disposition: form-data; name=\"distance\"\r\n\r\n".data(using: .utf8)!)
+                    body.append("\(distance)\r\n".data(using: .utf8)!)
+                }
+            }
+        }
+                
         // Close the request
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)
         
@@ -186,4 +205,31 @@ class NetworkManager: ObservableObject{
             baseURL = "https://:8000"
         }
     }
+
+    // Returns the distance of who we are following in meters
+    private func getDepth(at x: Float, y: Float) -> Float?{
+        guard let depthData = depthData else{
+                return nil
+            }
+            
+        // convert the depth data to float32 formatting
+        let convertedDepth = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
+        let depthMap = convertedDepth.depthDataMap
+            
+        let width = CVPixelBufferGetWidth(depthMap)
+        let height = CVPixelBufferGetHeight(depthMap)
+            
+        // Reverse the rotation we did on our JPEG image to the backend to match our depth map orientation
+        let coordX = Int((1.0 - y) * Float(width))
+        let coordY = Int(x * Float(height))
+            
+        // read the depth data at the center of the bounding box
+        CVPixelBufferLockBaseAddress(depthMap, .readOnly)
+        let row = CVPixelBufferGetBaseAddress(depthMap)! + coordY * CVPixelBufferGetBytesPerRow(depthMap)
+        let depth = row.assumingMemoryBound(to: Float32.self)[coordX]
+        CVPixelBufferUnlockBaseAddress(depthMap, .readOnly)
+            
+        return depth
+    }
 }
+

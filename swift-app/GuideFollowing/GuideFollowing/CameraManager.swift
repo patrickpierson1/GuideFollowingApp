@@ -12,8 +12,10 @@ class CameraManager: NSObject, ObservableObject{
     private let videoOutput = AVCaptureVideoDataOutput()
     private let sessionQueue = DispatchQueue(label: "camera.session.queue")
     private var currentCameraInput: AVCaptureDeviceInput?
+    private let depthOutput = AVCaptureDepthDataOutput()
 
     var onFrameCaptured: ((CVPixelBuffer)->Void)?
+    var onDepthCaptured: ((AVDepthData)->Void)?
 
     override init(){
         super.init()
@@ -35,7 +37,7 @@ class CameraManager: NSObject, ObservableObject{
         captureSession.sessionPreset = .high
 
         // get and add camera input
-        if let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: position){
+        if let camera = AVCaptureDevice.default(.builtInLiDARDepthCamera, for: .video, position: position){
             // Try and create the camera input
             do{
                 let input = try AVCaptureDeviceInput(device: camera)
@@ -47,6 +49,12 @@ class CameraManager: NSObject, ObservableObject{
                 print("Error setting up the camera input: \(error)")
                 captureSession.commitConfiguration()
                 return
+            }
+            
+            // add depth output to capture the distance
+            if captureSession.canAddOutput(depthOutput){
+                captureSession.addOutput(depthOutput)
+                depthOutput.setDelegate(self, callbackQueue: sessionQueue)
             }
 
             // Setup the output to receive frames on the background thread
@@ -102,7 +110,6 @@ class CameraManager: NSObject, ObservableObject{
                         if self.captureSession.canAddInput(newInput){
                             self.captureSession.addInput(newInput)
                             self.currentCameraInput = newInput
-
                             // Update the position on our main thread
                             DispatchQueue.main.async{
                                 self.currentPosition = newPosition
@@ -152,5 +159,12 @@ extension CameraManager: AVCaptureVideoDataOutputSampleBufferDelegate{
         if let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer){
             onFrameCaptured?(pixelBuffer)
         }
+    }
+}
+
+// Receives depth data from the camera
+extension CameraManager: AVCaptureDepthDataOutputDelegate{
+    func depthDataOutput(_ output: AVCaptureDepthDataOutput, didOutput depthData: AVDepthData, timestamp: CMTime, connection: AVCaptureConnection){
+        onDepthCaptured?(depthData)
     }
 }

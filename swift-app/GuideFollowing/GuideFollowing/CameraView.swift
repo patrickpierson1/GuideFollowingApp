@@ -45,6 +45,19 @@ struct CameraView: View{
                                 .background(isSelected ? Color.blue : Color.green)
                                 .cornerRadius(4)
                                 .offset(y: -24)
+                            
+                            // show the distance of who we are tracking above the box
+                            if let distance = person.distance{
+                                Text("\(String(format: "%.1f", distance))m")
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.white)
+                                    .padding(4)
+                                    .background(isSelected ? Color.blue : Color.green)
+                                    .cornerRadius(4)
+                                    .offset(x: rect.width - 40, y: -24)
+                            }
+
                         }
                         .contentShape(Rectangle())
                         .position(x: rect.midX, y: rect.midY)
@@ -160,7 +173,6 @@ struct CameraView: View{
                             .background(isTrackingActive ? Color.red : Color.green)
                             .cornerRadius(25)
                     }
-
                     Spacer()
 
                     // Camera switch button
@@ -184,6 +196,9 @@ struct CameraView: View{
         .onAppear{
             cameraManager.setupCamera()
             cameraManager.startSession()
+            cameraManager.onDepthCaptured={ depthData in
+                networkManager.depthData = depthData
+            }
         }
         // If the app is closed shut off the camera
         .onDisappear{
