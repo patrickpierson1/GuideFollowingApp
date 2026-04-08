@@ -9,6 +9,13 @@ Week 1 4/5/2026-4/11/2026
         - End Time: 10:04
         - Duration: 3 Hours and 34 Minutes
         - Results: Didn't push my code, forgot the iphone 13 pro in lab so couldn't test my changes want to make sure they work before pushing anything
+- Team Member: Joseph Loreen
+    - Date: 4/8/2026
+        - Goals: In lab testing the LiDAR.
+        - Start Time: 10:09
+        - End Time:
+        - Duration:
+        - Results:
 - Team Member: Marlen Vining
     - Date:
         - Goals: 
