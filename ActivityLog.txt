@@ -6,20 +6,23 @@ Week 1 4/5/2026-4/11/2026
     - Date: 4/7/2026
         - Goals: Add depth sensor to the swift app
         - Start Time: 6:30
-        - End Time:
-        - Duration:
+        - End Time: 10:04
+        - Duration: 3 Hours and 34 Minutes
+        - Results: Didn't push my code, forgot the iphone 13 pro in lab so couldn't test my changes want to make sure they work before pushing anything
 - Team Member: Marlen Vining
     - Date:
         - Goals: 
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 - Team Member: Patrick Pierson
     - Date:
         - Goals: 
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 
 Week 2 4/12/2026-4/18/2026
 
@@ -29,18 +32,21 @@ Week 2 4/12/2026-4/18/2026
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 - Team Member: Marlen Vining
     - Date:
         - Goals: 
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 - Team Member: Patrick Pierson
     - Date:
         - Goals: 
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 
 Week 3 4/19/2026-4/25/2026
 
@@ -50,18 +56,21 @@ Week 3 4/19/2026-4/25/2026
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 - Team Member: Marlen Vining
     - Date:
         - Goals: 
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 - Team Member: Patrick Pierson
     - Date:
         - Goals: 
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 
 Week 4 4/26/2026-5/2/2026
 
@@ -71,18 +80,21 @@ Week 4 4/26/2026-5/2/2026
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 - Team Member: Marlen Vining
     - Date:
         - Goals: 
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 - Team Member: Patrick Pierson
     - Date:
         - Goals: 
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 
 Week 5 5/3/2026-5/9/2026
 
@@ -92,18 +104,21 @@ Week 5 5/3/2026-5/9/2026
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 - Team Member: Marlen Vining
     - Date:
         - Goals: 
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 - Team Member: Patrick Pierson
     - Date:
         - Goals: 
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 
 Week 6 5/10/2026-4/16/2026
 
@@ -113,18 +128,21 @@ Week 6 5/10/2026-4/16/2026
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 - Team Member: Marlen Vining
     - Date:
         - Goals: 
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 - Team Member: Patrick Pierson
     - Date:
         - Goals: 
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 
 Week 7 5/24/2026-5/30/2026
 
@@ -134,18 +152,21 @@ Week 7 5/24/2026-5/30/2026
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 - Team Member: Marlen Vining
     - Date:
         - Goals: 
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 - Team Member: Patrick Pierson
     - Date:
         - Goals: 
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 
 Week 8 5/31/2026-6/6/2026
 
@@ -155,18 +176,21 @@ Week 8 5/31/2026-6/6/2026
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 - Team Member: Marlen Vining
     - Date:
         - Goals: 
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 - Team Member: Patrick Pierson
     - Date:
         - Goals: 
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 
 Week 9 6/7/2026-6/13/2026
 
@@ -176,15 +200,18 @@ Week 9 6/7/2026-6/13/2026
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 - Team Member: Marlen Vining
     - Date:
         - Goals: 
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
 - Team Member: Patrick Pierson
     - Date:
         - Goals: 
         - Start Time:
         - End Time:
         - Duration:
+        - Results:
