@@ -25,6 +25,8 @@ MIN_CONFIDENCE = 0.7     # raise to reduce false positives (e.g. 0.7+ recommende
 MIN_REL_AREA = 0.01      # e.g. 0.01 to drop tiny boxes (<1% of image)
 # --------------------------------------
 
+following_distance = 1.0
+
 # Preload available models so swapping is cheap.
 MODEL_FILES = {
     "n": "models/yolov8n.pt",
@@ -109,6 +111,7 @@ async def detect(
     model: str = Form("n"),
     following: bool = Form(False),
     guide_uid: Optional[int] = Form(None),
+    distance: Optional[float] = Form(None),   # <‑‑ add this
 ):
     # Run detection using YOLO model
     detections, w, h = await Detect(image, model, MODELS, PERSON_CLASS_ID, MIN_CONFIDENCE, MIN_REL_AREA)
@@ -118,21 +121,23 @@ async def detect(
         tracked = tracker.update(detections, (w, h))
     
     # If following mode is enabled and a guide_uid is provided
-    if following and guide_uid is not None:
-        
-        # print(f"Attempting to guide to ID {guide_uid}...")
-        target = guide(tracked, guide_uid, w, h)
-        if target is not None:
-            # send joystick commands to guide towards the target center
-            center_x, center_y, area = target
-            joystick_x, joystick_y = center_to_joystick(center_x, center_y)
-            if area < GUIDE_APPROACH_AREA_THRESHOLD:
-                joystick_y = JOYSTICK_POSITIVE_MAX
-            print(
-                f"Guide center: X={center_x:.3f}, Y={center_y:.3f}, area={area:.3f} -> "
-                f"joystick X={joystick_x}, Y={joystick_y}"
-            )
-            Shared.set_joystick(joystick_x, joystick_y, hold_seconds=GUIDE_COMMAND_HOLD_SECONDS)
+    if following and guide_uid and distance is not None:
+        if distance > following_distance:
+            # print(f"Attempting to guide to ID {guide_uid}...")
+            target = guide(tracked, guide_uid, w, h)
+            if target is not None:
+                # send joystick commands to guide towards the target center
+                center_x, center_y, area = target
+                joystick_x, joystick_y = center_to_joystick(center_x, center_y)
+                if area < GUIDE_APPROACH_AREA_THRESHOLD:
+                    joystick_y = JOYSTICK_POSITIVE_MAX
+                print(
+                    f"Guide center: X={center_x:.3f}, Y={center_y:.3f}, area={area:.3f} -> "
+                    f"joystick X={joystick_x}, Y={joystick_y}"
+                )
+                Shared.set_joystick(joystick_x, joystick_y, hold_seconds=GUIDE_COMMAND_HOLD_SECONDS)
+            else:
+                Shared.reset_joystick()
         else:
             Shared.reset_joystick()
     else:
