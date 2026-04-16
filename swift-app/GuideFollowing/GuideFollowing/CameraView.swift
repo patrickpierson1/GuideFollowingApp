@@ -65,6 +65,7 @@ struct CameraView: View{
                         .onTapGesture{
                             if selectedPersonID == person.id{
                                 selectedPersonID = nil
+                                networkManager.moveChair = false
                             }else{
                                 selectedPersonID = person.id
                             }
@@ -130,7 +131,7 @@ struct CameraView: View{
                             Text("YOLO Model")
                                 .font(.headline)
                         }
-
+                        
                     }label:{
                         Image(systemName: "gearshape.fill")
                             .font(.title2)
@@ -138,13 +139,14 @@ struct CameraView: View{
                             .padding()
                             .background(Color.black.opacity(0.5))
                             .clipShape(Circle())
+                            .offset(x: -5)
                     }
                     .sheet(isPresented: $ip_menu) {
                         SettingsView(networkManager:networkManager)
                             .presentationDetents([.medium])
                     }
                     Spacer()
-
+                    
                     // Start/Stop tracking button
                     Button(action: {
                         isTrackingActive.toggle()
@@ -163,9 +165,11 @@ struct CameraView: View{
                             selectedPersonID = nil
                             networkManager.setTrackedPersonID(nil)
                             networkManager.resetTracker()
+                            networkManager.moveChair = false
                         }
                     }){
                         Text(isTrackingActive ? "Stop Tracking" : "Start Tracking")
+                            .frame(width: 120)
                             .font(.headline)
                             .foregroundColor(.white)
                             .padding(.horizontal, 30)
@@ -174,19 +178,24 @@ struct CameraView: View{
                             .cornerRadius(25)
                     }
                     Spacer()
-
-                    // Camera switch button
+                    // Button to start moving/stop
                     Button(action: {
-                        cameraManager.switchCamera()
+                        // Add the logic here for starting / stopping the chair
+                        networkManager.moveChair.toggle()
                     }){
-                        Image(systemName: "camera.rotate.fill")
-                            .font(.title2)
+                        Text(networkManager.moveChair ? "Stop" : "Move")
+                            .frame(width: 35)
+                            .font(.caption)
                             .foregroundColor(.white)
                             .padding()
-                            .background(Color.black.opacity(0.5))
+                            .background(networkManager.moveChair ? Color.red : Color.green)
                             .clipShape(Circle())
+                            .offset(x: 5)
                     }
-                }
+                    .disabled(selectedPersonID == nil)
+                    .opacity(selectedPersonID == nil ? 0.2 : 1.0)
+                    }
+                    
                 // Padding for the button positions
                 .padding(.horizontal, 30)
                 .padding(.bottom, 30)

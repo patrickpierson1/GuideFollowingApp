@@ -32,6 +32,7 @@ class NetworkManager: ObservableObject{
     @Published var detectedPeople: [DetectedPerson] = []
     @Published var selectedModel: String = "n"
     @Published var trackedPersonID: Int? = nil
+    @Published var moveChair: Bool = false
     var depthData: AVDepthData? = nil
     
     // Backend server address (WILL NEED TO CHANGE TO THE PI'S LATER, currently is the labs IP)
@@ -74,10 +75,10 @@ class NetworkManager: ObservableObject{
         let boundary = UUID().uuidString
         // Tell the server we're sending form data with multiple fields
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        // Build the actual form body (image + model + following fields)
+        // Attach the image and all the data that needs to be sent to the backend
         request.httpBody = buildRequest(jpegData: jpegData, boundary: boundary)
         
-        // Send the request to the backend
+        // Send the request to the backend and handle the response
         URLSession.shared.dataTask(with: request){ [weak self] data, response, error in
             defer{
                 Task{ @MainActor [weak self] in

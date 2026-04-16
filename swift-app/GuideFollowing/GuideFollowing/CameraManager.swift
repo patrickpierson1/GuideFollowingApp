@@ -83,58 +83,6 @@ class CameraManager: NSObject, ObservableObject{
         }
     }
 
-    // Switches between the front and back camera
-    func switchCamera(){
-        // Run on the background thread
-        sessionQueue.async{ [weak self] in
-            if let self = self{
-                self.captureSession.beginConfiguration()
-
-                // Remove the current camera
-                if let currentInput = self.currentCameraInput{
-                    self.captureSession.removeInput(currentInput)
-                }
-                
-                // Check the current position of the camera and change our new position to the opposite
-                let newPosition: AVCaptureDevice.Position
-                if self.currentPosition == .back{
-                    newPosition = .front
-                }else{
-                    newPosition = .back
-                }
-                // Try to get the new camera device
-                if let newCamera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: newPosition){
-                    do{
-                        // Wrap the camera device as input and see if we can add it to the session
-                        let newInput = try AVCaptureDeviceInput(device: newCamera)
-                        if self.captureSession.canAddInput(newInput){
-                            self.captureSession.addInput(newInput)
-                            self.currentCameraInput = newInput
-                            // Update the position on our main thread
-                            DispatchQueue.main.async{
-                                self.currentPosition = newPosition
-                            }
-                        }
-                    }catch{
-                        print("Error when switching cameras: \(error)")
-                        // If we couldnt add the new camera just restore the old camera
-                        if let currentInput = self.currentCameraInput{
-                            self.captureSession.addInput(currentInput)
-                        }
-                    }
-                }else{
-                    print("Failed to get new camera")
-                    // If switching cameras fails just stay at the same camera
-                    if let currentInput = self.currentCameraInput{
-                        self.captureSession.addInput(currentInput)
-                    }
-                }
-                // Apply all the changes we have made
-                self.captureSession.commitConfiguration()
-            }
-        }
-    }
-
     func startSession(){
         sessionQueue.async{ [weak self] in
             if let self = self{
