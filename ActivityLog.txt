@@ -60,22 +60,22 @@ Week 2 4/12/2026-4/18/2026
     - Date: 4/17/2026
         - Goals: Testing
         - Start Time: 11:32AM
-        - End Time:
-        - Duration:
-        - Results:
+        - End Time: 1:12PM
+        - Duration: 1 Hour and 40 Minutes
+        - Results: Got lots of good testing done in the halls, need to adjust the distance calcluation and also take multiple points from the bounding box.
 - Team Member: Marlen Vining
     - Date: 4/17/2026
         - Goals: Testing
         - Start Time: 11:32AM
-        - End Time:
-        - Duration:
+        - End Time: 1:12PM
+        - Duration: 1 Hour and 40 Minutes
         - Results:
 - Team Member: Patrick Pierson
     - Date: 4/17/2026
         - Goals: Testing
         - Start Time: 11:32AM
-        - End Time:
-        - Duration:
+        - End Time: 1:12PM
+        - Duration: 1 Hour and 40 Minutes
         - Results:
 
 Week 3 4/19/2026-4/25/2026

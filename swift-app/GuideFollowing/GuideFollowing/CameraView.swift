@@ -65,7 +65,7 @@ struct CameraView: View{
                         .onTapGesture{
                             if selectedPersonID == person.id{
                                 selectedPersonID = nil
-                                networkManager.moveChair = false
+                                networkManager.move = false
                             }else{
                                 selectedPersonID = person.id
                             }
@@ -165,7 +165,7 @@ struct CameraView: View{
                             selectedPersonID = nil
                             networkManager.setTrackedPersonID(nil)
                             networkManager.resetTracker()
-                            networkManager.moveChair = false
+                            networkManager.move = false
                         }
                     }){
                         Text(isTrackingActive ? "Stop Tracking" : "Start Tracking")
@@ -181,14 +181,14 @@ struct CameraView: View{
                     // Button to start moving/stop
                     Button(action: {
                         // Add the logic here for starting / stopping the chair
-                        networkManager.moveChair.toggle()
+                        networkManager.move.toggle()
                     }){
-                        Text(networkManager.moveChair ? "Stop" : "Move")
+                        Text(networkManager.move ? "Stop" : "Move")
                             .frame(width: 35)
                             .font(.caption)
                             .foregroundColor(.white)
                             .padding()
-                            .background(networkManager.moveChair ? Color.red : Color.green)
+                            .background(networkManager.move ? Color.red : Color.green)
                             .clipShape(Circle())
                             .offset(x: 5)
                     }

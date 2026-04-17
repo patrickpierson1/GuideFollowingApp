@@ -32,10 +32,11 @@ class NetworkManager: ObservableObject{
     @Published var detectedPeople: [DetectedPerson] = []
     @Published var selectedModel: String = "n"
     @Published var trackedPersonID: Int? = nil
-    @Published var moveChair: Bool = false
+    @Published var move: Bool = false
     var depthData: AVDepthData? = nil
     
     // Backend server address (WILL NEED TO CHANGE TO THE PI'S LATER, currently is the labs IP)
+    // @Published var baseURL: String = "http://10.111.161.67:8000"
     @Published var baseURL: String = "http://172.30.109.72:8000"
     private var isSending = false
     private var isActive = false
@@ -102,6 +103,7 @@ class NetworkManager: ObservableObject{
                     return
                 }
                 
+                // Decode the response from the server into the DetectResponse struct
                 guard let decoded = try? JSONDecoder().decode(DetectResponse.self, from: data) else{
                     print("Failed to decode response")
                     return
@@ -149,10 +151,13 @@ class NetworkManager: ObservableObject{
         body.append("Content-Disposition: form-data; name=\"following\"\r\n\r\n".data(using: .utf8)!)
         body.append("\(isFollowing)\r\n".data(using: .utf8)!)
 
-        if let trackedPersonID{
-            body.append(boundaryPrefix.data(using: .utf8)!)
-            body.append("Content-Disposition: form-data; name=\"guide_uid\"\r\n\r\n".data(using: .utf8)!)
-            body.append("\(trackedPersonID)\r\n".data(using: .utf8)!)
+        // Only send the trackedPersonID if we are ready to move
+        if move{
+            if let trackedPersonID{
+                body.append(boundaryPrefix.data(using: .utf8)!)
+                body.append("Content-Disposition: form-data; name=\"guide_uid\"\r\n\r\n".data(using: .utf8)!)
+                body.append("\(trackedPersonID)\r\n".data(using: .utf8)!)
+            }
         }
 
         // Send distance(in meters) if we are following someone and have the depth data
@@ -215,18 +220,21 @@ class NetworkManager: ObservableObject{
             
         // convert the depth data to float32 formatting
         let convertedDepth = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
-        let depthMap = convertedDepth.depthDataMap
+        let orientedDepth = convertedDepth.applyingExifOrientation(.right)
+        let depthMap = orientedDepth.depthDataMap
             
         let width = CVPixelBufferGetWidth(depthMap)
         let height = CVPixelBufferGetHeight(depthMap)
             
         // Reverse the rotation we did on our JPEG image to the backend to match our depth map orientation
-        let coordX = Int((1.0 - y) * Float(width))
+        let coordX = Int(y * Float(width))
         let coordY = Int(x * Float(height))
             
         // read the depth data at the center of the bounding box
         CVPixelBufferLockBaseAddress(depthMap, .readOnly)
+        // Find the correct row
         let row = CVPixelBufferGetBaseAddress(depthMap)! + coordY * CVPixelBufferGetBytesPerRow(depthMap)
+        // Grab the value at the correct column/row in the depth map
         let depth = row.assumingMemoryBound(to: Float32.self)[coordX]
         CVPixelBufferUnlockBaseAddress(depthMap, .readOnly)
             
