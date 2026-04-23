@@ -31,6 +31,11 @@ Week 1 4/5/2026-4/11/2026
         - Duration: 37 Minutes
         - Results:
 
+- Total Hours Week 1:
+    - Joseph Loreen: 5 Hours and 59 Minutes
+    - Patrick Pierson: 37 Minutes
+    - Marlen Vining:
+
 Week 2 4/12/2026-4/18/2026
 
 - Team Member: Joseph Loreen
@@ -78,15 +83,21 @@ Week 2 4/12/2026-4/18/2026
         - Duration: 1 Hour and 40 Minutes
         - Results:
 
+- Total Hours Week 2:
+    - Joseph Loreen: 3 Hours and 25 Minutes
+    - Patrick Pierson: 3 Hours and 40 Minutes
+    - Marlen Vining: 4 Hours and 40 Minutes
+
 Week 3 4/19/2026-4/25/2026
 
 - Team Member: Joseph Loreen
     - Date: 4/22/2026
         - Goals: Revamp the settings menu and update a few things with the depthmap
         - Start Time: 7:50PM
-        - End Time:
-        - Duration:
-        - Results:
+        - End Time: 10:48PM
+        - Duration: 2 Hours and 58 Minutes
+        - Results: Created a new settings menu, removed unused features/cleaned up code, 
+            added sliders for both speed and stopping distance. Also fixed some stuff with the depthData
 - Team Member: Marlen Vining
     - Date:
         - Goals: 
@@ -101,6 +112,11 @@ Week 3 4/19/2026-4/25/2026
         - End Time:
         - Duration:
         - Results:
+
+- Total Hours Week 3:
+    - Joseph Loreen:
+    - Patrick Pierson:
+    - Marlen Vining:
 
 Week 4 4/26/2026-5/2/2026
 
@@ -126,6 +142,11 @@ Week 4 4/26/2026-5/2/2026
         - Duration:
         - Results:
 
+- Total Hours Week 4:
+    - Joseph Loreen:
+    - Patrick Pierson:
+    - Marlen Vining:
+
 Week 5 5/3/2026-5/9/2026
 
 - Team Member: Joseph Loreen
@@ -149,6 +170,11 @@ Week 5 5/3/2026-5/9/2026
         - End Time:
         - Duration:
         - Results:
+
+- Total Hours Week 5:
+    - Joseph Loreen:
+    - Patrick Pierson:
+    - Marlen Vining:
 
 Week 6 5/10/2026-4/16/2026
 
@@ -174,6 +200,11 @@ Week 6 5/10/2026-4/16/2026
         - Duration:
         - Results:
 
+- Total Hours Week 6:
+    - Joseph Loreen:
+    - Patrick Pierson:
+    - Marlen Vining:
+
 Week 7 5/24/2026-5/30/2026
 
 - Team Member: Joseph Loreen
@@ -197,6 +228,11 @@ Week 7 5/24/2026-5/30/2026
         - End Time:
         - Duration:
         - Results:
+
+- Total Hours Week 7:
+    - Joseph Loreen:
+    - Patrick Pierson:
+    - Marlen Vining:
 
 Week 8 5/31/2026-6/6/2026
 
@@ -222,6 +258,11 @@ Week 8 5/31/2026-6/6/2026
         - Duration:
         - Results:
 
+- Total Hours Week 8:
+    - Joseph Loreen:
+    - Patrick Pierson:
+    - Marlen Vining:
+
 Week 9 6/7/2026-6/13/2026
 
 - Team Member: Joseph Loreen
@@ -245,3 +286,8 @@ Week 9 6/7/2026-6/13/2026
         - End Time:
         - Duration:
         - Results:
+
+- Total Hours Week 9:
+    - Joseph Loreen:
+    - Patrick Pierson:
+    - Marlen Vining:

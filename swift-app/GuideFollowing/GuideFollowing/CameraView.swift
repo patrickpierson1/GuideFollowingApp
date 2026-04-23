@@ -6,7 +6,7 @@ struct CameraView: View{
     @StateObject private var networkManager = NetworkManager()
     @State private var isTrackingActive = false
     @State private var selectedPersonID: Int? = nil
-    @State private var ip_menu: Bool = false
+    @State private var settingsMenu: Bool = false
 
     // Check if the selected person is still being detected
     private var isPersonStillTracked: Bool{
@@ -105,34 +105,10 @@ struct CameraView: View{
                 Spacer()
 
                 HStack{
-                    // Settings button (Going to change this later not a fan of it)
-                    Menu{
-                        Section{
-                            Button("Edit IP") {
-                                ip_menu = true
-                            }
-                        }
-                        
-                        Section{
-                            // If this is selected while we are tracking someone we stop tracking that person
-                            Button("Reset Tracker"){
-                                networkManager.resetTracker()
-                                selectedPersonID = nil
-                                networkManager.setTrackedPersonID(nil)
-                            }
-                        }
-                        
-                        Section{
-                            Picker("", selection: $networkManager.selectedModel){
-                                Text("Extra Large").tag("x")
-                                Text("Medium").tag("m")
-                                Text("Nano").tag("n")
-                            }
-                            Text("YOLO Model")
-                                .font(.headline)
-                        }
-                        
-                    }label:{
+                    // Settings button
+                    Button(action: {
+                        settingsMenu = true
+                    }){
                         Image(systemName: "gearshape.fill")
                             .font(.title2)
                             .foregroundColor(.white)
@@ -141,8 +117,8 @@ struct CameraView: View{
                             .clipShape(Circle())
                             .offset(x: -5)
                     }
-                    .sheet(isPresented: $ip_menu) {
-                        SettingsView(networkManager:networkManager)
+                    .sheet(isPresented: $settingsMenu) {
+                        SettingsView(networkManager: networkManager)
                             .presentationDetents([.medium])
                     }
                     Spacer()
@@ -239,10 +215,8 @@ struct CameraPreviewView: UIViewRepresentable{
         return view
     }
 
-    // Updates when the previousLayer changes (when our camera starts or switches)
+    // Updates when the camera starts
     func updateUIView(_ uiView: UIView, context: Context){
-        // Remove the old camera layers before updating
-        uiView.layer.sublayers?.forEach{ $0.removeFromSuperlayer() }
         
         // Add the new camera layer
         if let previewLayer = previewLayer{
