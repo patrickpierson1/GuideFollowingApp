@@ -128,9 +128,15 @@ class NetworkManager: ObservableObject{
                     return
                 }
                 
+                // convert the depth data to float32 formatting
+                let convertedDepth = currentDepthData?.converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
+                // Get the depth map into portrait mode
+                let orientedDepth = convertedDepth?.applyingExifOrientation(.right)
+                let depthMap = orientedDepth?.depthDataMap
+                
                 // Convert the backend boxes to our detected person formatting
                 let people = decoded.boxes.map{ box in
-                    let distance = self.getDepth(at: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, currentDepthData: currentDepthData)
+                    let distance = self.getDepth(at: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, depthMap: depthMap)
                     return DetectedPerson(id: box.id, x1: CGFloat(box.x1), y1: CGFloat(box.y1), x2: CGFloat(box.x2), y2: CGFloat(box.y2), conf: box.conf, distance: distance)
                 }
                 // Update the UI to draw the boxes
@@ -217,16 +223,10 @@ class NetworkManager: ObservableObject{
     }
 
     // Returns the minimum distance of whoever is detected
-    private func getDepth(at x1: Float, y1: Float, x2: Float, y2: Float, currentDepthData: AVDepthData?) -> Float?{
-        guard let depthData = currentDepthData else{
+    private func getDepth(at x1: Float, y1: Float, x2: Float, y2: Float, depthMap: CVPixelBuffer?) -> Float?{
+        guard let depthMap = depthMap else{
                 return nil
             }
-            
-        // convert the depth data to float32 formatting
-        let convertedDepth = depthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
-        // Get the depth map into portrait mode
-        let orientedDepth = convertedDepth.applyingExifOrientation(.right)
-        let depthMap = orientedDepth.depthDataMap
             
         let width = CVPixelBufferGetWidth(depthMap)
         let height = CVPixelBufferGetHeight(depthMap)
