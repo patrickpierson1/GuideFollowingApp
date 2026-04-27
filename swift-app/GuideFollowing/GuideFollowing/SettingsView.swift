@@ -21,6 +21,15 @@ struct SettingsView: View {
             }
             .padding(.top, 20)
             
+            HStack{
+                Text("Backend Status:")
+                    .font(.subheadline)
+                Spacer()
+                Circle()
+                    .fill(networkManager.isConnected ? Color.green : Color.red)
+                    .frame(width: 10, height: 10)
+            }
+            
             VStack(alignment: .leading, spacing: 8){
                 Text("IP Address")
                     .font(.subheadline)
@@ -41,10 +50,10 @@ struct SettingsView: View {
             
             // Slider for speed control
             VStack(alignment: .leading, spacing: 8){
-                Text("Speed: \(String(format: "%.1f", networkManager.speed))")
+                Text("Speed: \(String(format: "%.1f", networkManager.maxSpeed))")
                     .font(.subheadline)
                     .foregroundColor(.white)
-                Slider(value: $networkManager.speed, in: 0.5...1.5, step: 0.1)
+                Slider(value: $networkManager.maxSpeed, in: 0.5...1.5, step: 0.1)
             }
                 
             Button("Reset Tracker"){

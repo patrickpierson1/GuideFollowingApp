@@ -75,7 +75,7 @@ struct CameraView: View{
                 }
             }
             .ignoresSafeArea()
-
+            
             // UI overlay
             VStack{
                 // Show who we are currently following
@@ -181,6 +181,7 @@ struct CameraView: View{
         .onAppear{
             cameraManager.setupCamera()
             cameraManager.startSession()
+            UIApplication.shared.isIdleTimerDisabled = true
             cameraManager.onDepthCaptured={ depthData in
                 networkManager.depthData = depthData
             }
@@ -188,6 +189,7 @@ struct CameraView: View{
         // If the app is closed shut off the camera
         .onDisappear{
             cameraManager.stopSession()
+            UIApplication.shared.isIdleTimerDisabled = false
         }
     }
 

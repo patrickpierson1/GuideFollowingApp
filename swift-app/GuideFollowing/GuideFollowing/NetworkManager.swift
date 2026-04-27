@@ -34,7 +34,8 @@ class NetworkManager: ObservableObject{
     @Published var move: Bool = false
     var depthData: AVDepthData? = nil
     @Published var stoppingDistance: Double = 2.0
-    @Published var speed: Double = 1.0
+    @Published var maxSpeed: Double = 1.0
+    @Published var isConnected: Bool = false
     
     // Backend server address
     // Pis IP
@@ -42,7 +43,7 @@ class NetworkManager: ObservableObject{
     // In Lab mac IP
     //@Published var baseURL: String = "http://172.30.109.72:8000"
     // Home IP 
-    @Published var baseURL: String = "http://192.168.0.104:8000"
+    @Published var baseURL: String = "http://192.168.0.102:8000"
 
     private var isSending = false
     private var isActive = false
@@ -97,9 +98,15 @@ class NetworkManager: ObservableObject{
             // Check for errors/if we got data back
             if let error = error{
                 print("Network error: \(error.localizedDescription)")
+                Task{ @MainActor [weak self] in
+                        self?.isConnected = false
+                    }
                 return
             }
             guard let data = data else{
+                Task{ @MainActor [weak self] in
+                        self?.isConnected = false
+                    }
                 print("No data received")
                 return
             }
@@ -123,13 +130,11 @@ class NetworkManager: ObservableObject{
                 
                 // Convert the backend boxes to our detected person formatting
                 let people = decoded.boxes.map{ box in
-                    // Calculate the center of the bounding box and get the Depth at the center
-                    let centerX = (box.x1+box.x2) / 2
-                    let centerY = (box.y1+box.y2) / 2
-                    let distance = getDepth(at: centerX, y: centerY, currentDepthData: currentDepthData)
+                    let distance = self.getDepth(at: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, currentDepthData: currentDepthData)
                     return DetectedPerson(id: box.id, x1: CGFloat(box.x1), y1: CGFloat(box.y1), x2: CGFloat(box.x2), y2: CGFloat(box.y2), conf: box.conf, distance: distance)
                 }
                 // Update the UI to draw the boxes
+                self.isConnected = true
                 self.detectedPeople = people
             }
         }.resume()
@@ -211,8 +216,8 @@ class NetworkManager: ObservableObject{
         trackedPersonID = id
     }
 
-    // Returns the distance of who we are following in meters
-    private func getDepth(at x: Float, y: Float, currentDepthData: AVDepthData?) -> Float?{
+    // Returns the minimum distance of whoever is detected
+    private func getDepth(at x1: Float, y1: Float, x2: Float, y2: Float, currentDepthData: AVDepthData?) -> Float?{
         guard let depthData = currentDepthData else{
                 return nil
             }
@@ -225,20 +230,45 @@ class NetworkManager: ObservableObject{
             
         let width = CVPixelBufferGetWidth(depthMap)
         let height = CVPixelBufferGetHeight(depthMap)
+        
+        // Calculate the center of the bounding box
+        let centerX = (x1 + x2) / 2
+        let centerY = (y1 + y2) / 2
             
-        // get x and y to be the center of the depth map
-        let coordX = Int(x * Float(width))
-        let coordY = Int(y * Float(height))
+        // Checking the distance at 5 places in the bounding box (went with sort of an X shape)
+        let points: [(Float, Float)] = [
+            (centerX, centerY),
+            (x1 + (x2-x1)*0.33, y1 + (y2-y1)*0.33),
+            (x1 + (x2-x1)*0.66, y1 + (y2-y1)*0.33),
+            (x1 + (x2-x1)*0.33, y1 + (y2-y1)*0.66),
+            (x1 + (x2-x1)*0.66, y1 + (y2-y1)*0.66)
+        ]
             
-        // read the depth data at the center of the bounding box
         CVPixelBufferLockBaseAddress(depthMap, .readOnly)
-        // Find the correct row
-        let row = CVPixelBufferGetBaseAddress(depthMap)! + coordY * CVPixelBufferGetBytesPerRow(depthMap)
-        // Grab the value at the correct column/row in the depth map
-        let depth = row.assumingMemoryBound(to: Float32.self)[coordX]
-        CVPixelBufferUnlockBaseAddress(depthMap, .readOnly)
+        // Unlock the buffer no matter what (either if we crash or return)
+        defer{
+            CVPixelBufferUnlockBaseAddress(depthMap, .readOnly)
+        }
+        
+        var minDepth: Float = .infinity
+        
+        // Calculate the distance of each of the 5 points in the bounding box and take the minimum distance
+        for (x, y) in points{
+            let coordX = Int(x * Float(width))
+            let coordY = Int(y * Float(height))
+            // Find the correct row
+            let row = CVPixelBufferGetBaseAddress(depthMap)! + coordY * CVPixelBufferGetBytesPerRow(depthMap)
+            // Grab the value at the correct column/row in the depth map
+            let depth = row.assumingMemoryBound(to: Float32.self)[coordX]
             
-        return depth
+            // Take the min depth
+            if depth > 0 && depth < minDepth{
+                minDepth = depth
+            }
+        }
+            
+        // Return nothing if min depth is still equal to infinity otherwise just return the minDepth we found
+        return minDepth == .infinity ? nil : minDepth
     }
 }
 
