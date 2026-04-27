@@ -114,16 +114,16 @@ Week 3 4/19/2026-4/25/2026
         - Results:
 
 - Total Hours Week 3:
-    - Joseph Loreen:
-    - Patrick Pierson:
-    - Marlen Vining:
+    - Joseph Loreen: 2 Hours 58 Minutes
+    - Patrick Pierson: 0
+    - Marlen Vining: 0
 
 Week 4 4/26/2026-5/2/2026
 
 - Team Member: Joseph Loreen
-    - Date:
-        - Goals: 
-        - Start Time:
+    - Date: 4/27/2026
+        - Goals: Select multiple points in the bounding box to reduce error in the distance calculation
+        - Start Time: 10:50AM
         - End Time:
         - Duration:
         - Results:
