@@ -133,22 +133,23 @@ Week 4 4/26/2026-5/2/2026
     - Date: 4/29/2026
         - Goals: Testing changes in the lab
         - Start Time: 11:50AM
-        - End Time:
-        - Duration:
-        - Results:
+        - End Time: 3:45PM
+        - Duration: 3 Hours and 55 Minutes
+        - Results: Got the speed testing and stopping distance working. took the chair outside
+        and had it follow us around. Testing went great
 - Team Member: Patrick Pierson
     - Date: 4/29/2026
         - Goals: Testing changes in the lab
         - Start Time: 11:50AM
-        - End Time:
-        - Duration:
+        - End Time: 3:45PM
+        - Duration: 3 Hours and 55 Minutes
         - Results:
 - Team Member: Joseph Loreen
     - Date: 4/29/2026
         - Goals: Testing changes in the lab
         - Start Time: 11:50AM
-        - End Time:
-        - Duration: 
+        - End Time: 3:45PM
+        - Duration: 3 Hours and 55 Minutes
         - Results: 
 
 - Total Hours Week 4:
