@@ -111,7 +111,9 @@ async def detect(
     model: str = Form("n"),
     following: bool = Form(False),
     guide_uid: Optional[int] = Form(None),
-    distance: Optional[float] = Form(None),   # <‑‑ add this
+    distance: Optional[float] = Form(None),
+    stoppingDistance: Optional[float] = Form(2.0),
+    maxSpeed: Optional[float] = Form(None)    # treat None as "not provided"
 ):
     # Run detection using YOLO model
     detections, w, h = await Detect(image, model, MODELS, PERSON_CLASS_ID, MIN_CONFIDENCE, MIN_REL_AREA)
@@ -122,11 +124,9 @@ async def detect(
     
     # If following mode is enabled and a guide_uid is provided
     if following and guide_uid and distance is not None:
-        if distance > following_distance:
-            # print(f"Attempting to guide to ID {guide_uid}...")
+        if distance > stoppingDistance:
             target = guide(tracked, guide_uid, w, h)
             if target is not None:
-                # send joystick commands to guide towards the target center
                 center_x, center_y, area = target
                 joystick_x, joystick_y = center_to_joystick(center_x, center_y)
                 if area < GUIDE_APPROACH_AREA_THRESHOLD:
@@ -142,7 +142,25 @@ async def detect(
             Shared.reset_joystick()
     else:
         Shared.reset_joystick()
-    
+
+    # -------------------------
+    # Handle maxSpeed update (file-backed via Shared)
+    # -------------------------
+    try:
+        current_speed = Shared.get_max_speed_percent()
+    except Exception:
+        current_speed = None
+
+    if maxSpeed is not None:
+        try:
+            ms = float(maxSpeed)
+            ms = max(0.0, min(100.0, ms))
+            # Always set first time (current_speed is None) or when it differs by >0.5%
+            if current_speed is None or abs(current_speed - ms) > 0.5:
+                Shared.set_max_speed_percent(ms)
+        except Exception:
+            pass
+
     # Return the count of tracked persons, their bounding boxes, and image dimensions
     if len(tracked) > 15:
         await reset_tracker()

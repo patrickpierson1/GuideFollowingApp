@@ -6,7 +6,7 @@ Prerequisites
 
 Backend (FastAPI + YOLO) setup (GitBash)
 1) From the `GuideFollowingApp` folder, create/activate a virtual environment:
-   - Create: `py -m venv .venv`
+   - Create: `python3 -m venv .venv`
    - Activate: `source .venv/bin/activate`
 2) Upgrade pip tooling:
    - `python -m pip install --upgrade pip setuptools wheel`
