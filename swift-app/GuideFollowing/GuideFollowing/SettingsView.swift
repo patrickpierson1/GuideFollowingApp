@@ -50,10 +50,10 @@ struct SettingsView: View {
             
             // Slider for speed control
             VStack(alignment: .leading, spacing: 8){
-                Text("Speed: \(String(format: "%.1f", networkManager.maxSpeed))")
+                Text("Max Speed: \(String(format: "%.1f", networkManager.maxSpeed))%")
                     .font(.subheadline)
                     .foregroundColor(.white)
-                Slider(value: $networkManager.maxSpeed, in: 0.5...1.5, step: 0.1)
+                Slider(value: $networkManager.maxSpeed, in: 0...100, step: 25)
             }
                 
             Button("Reset Tracker"){

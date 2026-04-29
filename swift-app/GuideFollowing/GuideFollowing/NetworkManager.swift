@@ -34,7 +34,7 @@ class NetworkManager: ObservableObject{
     @Published var move: Bool = false
     var depthData: AVDepthData? = nil
     @Published var stoppingDistance: Double = 2.0
-    @Published var maxSpeed: Double = 1.0
+    @Published var maxSpeed: Double = 0
     @Published var isConnected: Bool = false
     
     // Backend server address
