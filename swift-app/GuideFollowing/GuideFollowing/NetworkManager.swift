@@ -39,11 +39,11 @@ class NetworkManager: ObservableObject{
     
     // Backend server address
     // Pis IP
-    // @Published var baseURL: String = "http://10.111.161.67:8000"
+    @Published var baseURL: String = "http://10.111.161.67:8000"
     // In Lab mac IP
     //@Published var baseURL: String = "http://172.30.109.72:8000"
     // Home IP 
-    @Published var baseURL: String = "http://192.168.0.102:8000"
+    //@Published var baseURL: String = "http://192.168.0.102:8000"
 
     private var isSending = false
     private var isActive = false
@@ -159,11 +159,6 @@ class NetworkManager: ObservableObject{
         body.append(jpegData)
         body.append("\r\n".data(using: .utf8)!)
         
-        // Model field for the request
-        body.append(boundaryPrefix.data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"model\"\r\n\r\n".data(using: .utf8)!)
-        body.append("\("n")\r\n".data(using: .utf8)!)
-        
         // Following field for when we are following someone
         body.append(boundaryPrefix.data(using: .utf8)!)
         body.append("Content-Disposition: form-data; name=\"following\"\r\n\r\n".data(using: .utf8)!)
@@ -189,6 +184,14 @@ class NetworkManager: ObservableObject{
                 }
             }
         }
+        
+        body.append(boundaryPrefix.data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"maxSpeed\"\r\n\r\n".data(using: .utf8)!)
+        body.append("\(maxSpeed)\r\n".data(using: .utf8)!)
+        
+        body.append(boundaryPrefix.data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"stoppingDistance\"\r\n\r\n".data(using: .utf8)!)
+        body.append("\(stoppingDistance)\r\n".data(using: .utf8)!)
                 
         // Close the request
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)
