@@ -129,21 +129,27 @@ Week 4 4/26/2026-5/2/2026
         - Results: Made it so the iphone no longer goes to sleep while using the app, added a backend 
         status in the settings menu(might remove this). Added checking 5 points in the bounding box for
         distance and taking the minimum
-
 - Team Member: Marlen Vining
-    - Date:
-        - Goals: 
-        - Start Time:
+    - Date: 4/29/2026
+        - Goals: Testing changes in the lab
+        - Start Time: 11:50AM
         - End Time:
         - Duration:
         - Results:
 - Team Member: Patrick Pierson
-    - Date:
-        - Goals: 
-        - Start Time:
+    - Date: 4/29/2026
+        - Goals: Testing changes in the lab
+        - Start Time: 11:50AM
         - End Time:
         - Duration:
         - Results:
+- Team Member: Joseph Loreen
+    - Date: 4/29/2026
+        - Goals: Testing changes in the lab
+        - Start Time: 11:50AM
+        - End Time:
+        - Duration: 
+        - Results: 
 
 - Total Hours Week 4:
     - Joseph Loreen:
