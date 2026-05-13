@@ -3,12 +3,12 @@
 mkdir temp
 export TMPDIR=$PWD/temp
 
-#sudo apt update && sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev git libbz2-dev liblzma-dev
-#wget https://www.python.org/ftp/python/3.11.4/Python-3.11.4.tgz
-#tar xzvf Python-3.11.4.tgz 
+sudo apt update && sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev git libbz2-dev liblzma-dev libssl-dev libffi-dev
+wget https://www.python.org/ftp/python/3.11.4/Python-3.11.4.tgz
+tar xzvf Python-3.11.4.tgz 
 cd Python-3.11.4/
-#./configure --with-default-suites=openssl
-#sudo make altinstall
+./configure --with-default-suites=openssl
+sudo make altinstall
 
 cd ..
 

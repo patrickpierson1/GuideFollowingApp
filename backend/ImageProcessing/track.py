@@ -100,7 +100,7 @@ class SimpleTracker:
     def _init_tracker(self) -> None:
         if ByteTrackBase is not None:
             ByteTrackBase._count = 0  # reset global ID counter
-        self._tracker = BYTETracker(self.args, frame_rate=self.fps)
+        self._tracker = BYTETracker(self.args)
 
     # reset the tracker state and clear all tracks
     def reset(self) -> None:

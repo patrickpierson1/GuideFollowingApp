@@ -301,3 +301,27 @@ Week 9 6/7/2026-6/13/2026
     - Joseph Loreen:
     - Patrick Pierson:
     - Marlen Vining:
+
+Week 9 6/13/2026-6/20/2026
+
+- Team Member: Joseph Loreen
+    - Date:
+        - Goals: 
+        - Start Time:
+        - End Time:
+        - Duration:
+        - Results:
+- Team Member: Marlen Vining
+    - Date:
+        - Goals: 
+        - Start Time: 
+        - End Time:
+        - Duration:
+        - Results:
+- Team Member: Patrick Pierson
+    - Date:
+        - Goals: 
+        - Start Time: 12:00pm
+        - End Time: 3:00pm
+        - Duration: 3 hours
+        - Results: re wired power wires to pi and worked on fixing setup script, then adjusted turning speed and tested

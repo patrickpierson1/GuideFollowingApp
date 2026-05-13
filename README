@@ -23,6 +23,17 @@ Backend (FastAPI + YOLO) setup (GitBash)
    - `uvicorn backend:app --reload --host 0.0.0.0 --port 8000`
    - The API will be available at `http://<your-lan-ip>:8000/detect`.
 
+Can Setup
+------------------------------------
+1) sudo nano /boot/firmware/config.txt
+2) add the following lines :
+dtparam=spi=on  
+dtoverlay=mcp2515-can0,oscillator=16000000,interrupt=25  
+dtoverlay=spi-bcm2835-overlay 
+3) sudo reboot 
+4) sudo apt-get install can-utils 
+5) sudo /sbin/ip link set can0 up type can bitrate 125000
+
 Project setup and run guide (iOS Swift App)
 ------------------------------------
 Prerequisites
