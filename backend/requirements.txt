@@ -1,0 +1,8 @@
+fastapi
+ultralytics
+can
+uvicorn
+pillow
+python-multipart
+--only-binary=numpy
+numpy==1.26.4
