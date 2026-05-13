@@ -196,12 +196,12 @@ Week 6 5/10/2026-4/16/2026
         - Duration:
         - Results:
 - Team Member: Marlen Vining
-    - Date:
-        - Goals: 
-        - Start Time:
-        - End Time:
-        - Duration:
-        - Results:
+    - Date: 5/12/2026
+        - Goals: Create setup script & configure AI hat
+        - Start Time: 6:15 PM
+        - End Time: 9:15 PM
+        - Duration: 3 hours
+        - Results: Setup script installs all needed packages without errors. Wrong hat may be installed on pi.
 - Team Member: Patrick Pierson
     - Date:
         - Goals: 
