@@ -205,10 +205,10 @@ Week 6 5/10/2026-5/16/2026
 - Team Member: Patrick Pierson
     - Date:
         - Goals: 
-        - Start Time:
-        - End Time:
-        - Duration:
-        - Results:
+        - Start Time: 12:00pm
+        - End Time: 3:00pm
+        - Duration: 3 hours
+        - Results: re wired power wires to pi and worked on fixing setup script, then adjusted turning speed and tested
 
 - Total Hours Week 6:
     - Joseph Loreen: 45 Minutes
@@ -232,12 +232,12 @@ Week 7 5/17/2026-5/23/2026
         - Duration:
         - Results:
 - Team Member: Patrick Pierson
-    - Date:
+    - Date: 5/19/2026
         - Goals: 
-        - Start Time:
-        - End Time:
-        - Duration:
-        - Results:
+        - Start Time:2pm
+        - End Time:5pm
+        - Duration:3 hours
+        - Results: tried to get ai hat operational and had no luck, setup for demo tomorrow with client
 - Team Member: Joseph Loreen
     - Date: 5/19/2026
         - Goals: Make sure the app is running correctly for our client meeting tomorrow/take screenshots of the apps ui to add to the slides
@@ -318,17 +318,4 @@ Week 9 6/7/2026-6/13/2026
         - End Time:
         - Duration:
         - Results:
-- Team Member: Marlen Vining
-    - Date:
-        - Goals: 
-        - Start Time: 12:00pm
-        - End Time: 3:00pm
-        - Duration: 3 hours
-        - Results: setup script and install pi hat
-- Team Member: Patrick Pierson
-    - Date:
-        - Goals: 
-        - Start Time: 12:00pm
-        - End Time: 3:00pm
-        - Duration: 3 hours
-        - Results: re wired power wires to pi and worked on fixing setup script, then adjusted turning speed and tested
+
