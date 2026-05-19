@@ -160,12 +160,12 @@ Week 4 4/26/2026-5/2/2026
 Week 5 5/3/2026-5/9/2026
 
 - Team Member: Joseph Loreen
-    - Date:
-        - Goals: 
-        - Start Time:
-        - End Time:
-        - Duration:
-        - Results:
+    - Date: 5/9/2026
+        - Goals: Add to presentation slides/practice presenting (Note didn't add to the activity log at the time of doing this)
+        - Start Time: 8:00 PM
+        - End Time: 9:45 PM
+        - Duration: 1 Hour and 45 Minutes
+        - Results: Fixed up the slides with relevant information / did a lot of run throughs of my part of the presentation
 - Team Member: Marlen Vining
     - Date:
         - Goals: 
@@ -182,19 +182,19 @@ Week 5 5/3/2026-5/9/2026
         - Results:
 
 - Total Hours Week 5:
-    - Joseph Loreen:
+    - Joseph Loreen: 1 Hour and 45 Minutes
     - Patrick Pierson:
     - Marlen Vining:
 
-Week 6 5/10/2026-4/16/2026
+Week 6 5/10/2026-5/16/2026
 
 - Team Member: Joseph Loreen
-    - Date:
-        - Goals: 
-        - Start Time:
-        - End Time:
-        - Duration:
-        - Results:
+    - Date: 5/16/2026
+        - Goals: Practice presenting
+        - Start Time: 4:15 PM
+        - End Time: 5:00 PM
+        - Duration: 45 Minutes
+        - Results: Practiced presenting went well
 - Team Member: Marlen Vining
     - Date: 5/12/2026
         - Goals: Create setup script & configure AI hat
@@ -211,19 +211,19 @@ Week 6 5/10/2026-4/16/2026
         - Results:
 
 - Total Hours Week 6:
-    - Joseph Loreen:
+    - Joseph Loreen: 45 Minutes
     - Patrick Pierson:
     - Marlen Vining:
 
-Week 7 5/24/2026-5/30/2026
+Week 7 5/17/2026-5/23/2026
 
 - Team Member: Joseph Loreen
-    - Date:
-        - Goals: 
-        - Start Time:
-        - End Time:
-        - Duration:
-        - Results:
+    - Date: 5/19/2026
+        - Goals: Practice presenting
+        - Start Time: 11:00 AM
+        - End Time: 11:30 AM
+        - Duration: 30 Minutes
+        - Results: Went well again 
 - Team Member: Marlen Vining
     - Date:
         - Goals: 
@@ -238,13 +238,20 @@ Week 7 5/24/2026-5/30/2026
         - End Time:
         - Duration:
         - Results:
+- Team Member: Joseph Loreen
+    - Date: 5/19/2026
+        - Goals: Make sure the app is running correctly for our client meeting tomorrow/take screenshots of the apps ui to add to the slides
+        - Start Time: 12:10PM
+        - End Time:
+        - Duration:
+        - Results:
 
 - Total Hours Week 7:
     - Joseph Loreen:
     - Patrick Pierson:
     - Marlen Vining:
 
-Week 8 5/31/2026-6/6/2026
+Week 8 5/24/2026-5/30/2026
 
 - Team Member: Joseph Loreen
     - Date:
@@ -273,7 +280,7 @@ Week 8 5/31/2026-6/6/2026
     - Patrick Pierson:
     - Marlen Vining:
 
-Week 9 6/7/2026-6/13/2026
+Week 9 5/31/2026-6/6/2026
 
 - Team Member: Joseph Loreen
     - Date:
@@ -302,7 +309,7 @@ Week 9 6/7/2026-6/13/2026
     - Patrick Pierson:
     - Marlen Vining:
 
-Week 9 6/13/2026-6/20/2026
+Week 9 6/7/2026-6/13/2026
 
 - Team Member: Joseph Loreen
     - Date:
