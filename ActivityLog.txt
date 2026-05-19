@@ -242,9 +242,9 @@ Week 7 5/17/2026-5/23/2026
     - Date: 5/19/2026
         - Goals: Make sure the app is running correctly for our client meeting tomorrow/take screenshots of the apps ui to add to the slides
         - Start Time: 12:10PM
-        - End Time:
-        - Duration:
-        - Results:
+        - End Time: 1:36 PM
+        - Duration: 1 Hour and 26 Minutes
+        - Results: Everything is working correctly and got screenshots for my presentation
 
 - Total Hours Week 7:
     - Joseph Loreen:
