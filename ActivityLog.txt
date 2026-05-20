@@ -245,6 +245,35 @@ Week 7 5/17/2026-5/23/2026
         - End Time: 1:36 PM
         - Duration: 1 Hour and 26 Minutes
         - Results: Everything is working correctly and got screenshots for my presentation
+- Team Member: Joseph Loreen
+    - Date: 5/19/2026
+        - Goals: Practiced presenting for a few hours last night didnt update the activity log until today
+        - Start Time: 7:15PM
+        - End Time: 10:20 PM
+        - Duration: 3 Hours and 5 Minutes
+        - Results: 
+
+- Team Member: Joseph Loreen
+    - Date: 5/20/2026
+        - Goals: Prepare for our client meeting/have our client meeting
+        - Start Time: 11:00AM
+        - End Time: 1:10PM
+        - Duration: 2 Hours and 10 Minutes
+        - Results: Successfully demo'd our progress to our client and answered any questions he had
+- Team Member: Marlen Vining
+    - Date: 5/20/2026
+        - Goals: Prepare for our client meeting/have our client meeting
+        - Start Time: 11:00AM
+        - End Time: 1:10PM
+        - Duration: 2 Hours and 10 Minutes
+        - Results: Successfully demo'd our progress to our client and answered any questions he had
+- Team Member: Patrick Pierson
+    - Date: 5/20/2026
+        - Goals: Prepare for our client meeting/have our client meeting
+        - Start Time: 11:00AM
+        - End Time: 1:10PM
+        - Duration: 2 Hours and 10 Minutes
+        - Results: Successfully demo'd our progress to our client and answered any questions he had
 
 - Total Hours Week 7:
     - Joseph Loreen:
