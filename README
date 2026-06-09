@@ -1,98 +1,198 @@
-Project setup and run guide
-------------------------------------
-Prerequisites
-- Python 3.11.x (64-bit recommended; use a fresh venv for this project).
-- Git (optional, for version control).
+AIChair: Guide Following Documentation
+By Joseph Loreen, Marlen Vining and Patrick Pierson
 
-Backend (FastAPI + YOLO) setup (GitBash)
-1) From the `GuideFollowingApp` folder, create/activate a virtual environment:
-   - Create: `python3 -m venv .venv`
-   - Activate: `source .venv/bin/activate`
-2) Upgrade pip tooling:
-   - `python -m pip install --upgrade pip setuptools wheel`
-3) Install dependencies (force wheels to avoid compiling numpy/torch):
-   - `python -m pip install --only-binary=:all: numpy==1.26.4`
-   - `python -m pip install can`
-   - `python -m pip install can_utils`
-   - CPU PyTorch wheels: `python -m pip install --only-binary=:all: torch torchvision torchaudio`
-   - App deps: `python -m pip install fastapi uvicorn ultralytics pillow python-multipart`
-   (If you prefer GPU and have CUDA, use the wheel index from pytorch.org.)
-5) Initalize the CAN bus and set bit rate to 125000
-   - `sudo /sbin/ip link set can0 up type can bitrate 125000`
-4) Run the backend (new terminal with the venv activated):
-   - `uvicorn backend:app --reload --host 0.0.0.0 --port 8000`
-   - The API will be available at `http://<your-lan-ip>:8000/detect`.
+1.0 Project Overview
+AIChair Guide Following is a wheelchair person following system designed to help wheelchair users navigate by following a person. The system is designed to provide an accessible and user-friendly interface to a YOLO backend for the autonomous tracking and following of a human guide. It enables a user to select a person for the system to follow. 
 
-Can Setup
-------------------------------------
-1) sudo nano /boot/firmware/config.txt
-2) add the following lines :
-dtparam=spi=on  
-dtoverlay=mcp2515-can0,oscillator=16000000,interrupt=25  
-dtoverlay=spi-bcm2835-overlay 
-3) sudo reboot 
-4) sudo apt-get install can-utils 
-5) sudo /sbin/ip link set can0 up type can bitrate 125000
+The system will then drive the chair to maintain a set distance from the guide. The system consists of an IOS app as a frontend and a Raspberry Pi as a backend. The app includes a view from the camera, a toggle for the backend tracking, the ability to select one of the tracked people to follow, and a settings menu. The backend uses a YOLO object detection model to draw boxes around any people in the images provided by the frontend. It uses the position of these boxes to drive the chair through the injection of RNET messages to face and follow the guide.
 
-Project setup and run guide (iOS Swift App)
-------------------------------------
-Prerequisites
-- macOS with Xcode installed
-- iPhone running iOS 15 or later
-- Apple ID
+This documentation covers the setup of both the frontend application and the backend. It also provides an explanation of the key functions in each part of the system. This documentation ends with an overview of how the system functions and some limitations we have encountered. 
 
-iOS App (Xcode) first time setup
-1) Clone the repository and open the project in Xcode
-2) Connect your iphone to your Mac using a USB cable:
-   - On your phone you will be asked if you "Trust This Computer" select yes
-3) In Xcode make sure your iPhone appears under Connected devices.
-   - Go to Window -> Device and Simulators
-   - Confirm your iPhone appears under connected devices
-4) Configure signing
-   - In the left sidebar click the project (GuideFollowing)
-   - Go to "Signing & Capabilties"
-   - Enable "Automatically manage signing"
-   - Select your Apple ID under Team (If not listed add your apple account)
-5) Select your iPhone as the run destionation
-   - Use the device dropdown at the top of Xcode
-6) Build and run the app
-   - click the Run button or press Cmd + R
-7) Trust the developer certificate
-   - On your iPhone go to: Settings -> General -> VPN & Device Management -> Developer App -> Trust
-8) Launch the app and allow camera access
+2.0 Backend Application
+2.1 Overview
+The backend application is designed to run on a Raspberry Pi 5 and serves as the main processing and control layer for the guide-following wheelchair system. It communicates wirelessly with the frontend application, which streams image frames from the phone camera to the backend in real time. The backend processes each incoming image, performs person detection, tracks detected individuals across frames, and generates control commands that are sent to the wheelchair through the RNET communication system.
+Human detection is performed using YOLO, which identifies people within each received camera frame and returns bounding box information for each valid detection. Detections below the configured confidence threshold are discarded to reduce false positives and improve tracking reliability. Once detections are generated, the tracking system assigns and maintains consistent IDs for each detected person. This allows the backend to distinguish between multiple people in the frame and continue identifying the same individual as they move.
+Person tracking is handled using an intersection-over-union based tracking approach. For each new frame, the tracker compares the bounding boxes from the current YOLO detections against the bounding boxes from the previous frame. If two bounding boxes overlap enough, they are treated as the same person and the previous ID is preserved. This allows detections to be mapped to stable person IDs over time.
+The backend supports different operating states. In tracking mode, the system detects and tracks all visible people, allowing the frontend to select a specific person ID. Once a target person is selected, the backend transitions into following mode. In following mode, the backend monitors the selected person’s bounding box, calculates the normalized center position of that person in the frame, and determines the direction the wheelchair should move in order to follow them. These direction commands are written to a shared thread-safe control interface.
+The control system reads these shared joystick values and converts them into RNET-compatible CAN messages. These messages emulate joystick commands and are injected onto the wheelchair CAN bus, allowing the backend to command movement through the chair’s existing motor controller interface. This separates the image-processing pipeline from the low-level chair-control pipeline while still allowing both systems to communicate safely through shared mutex-protected variables.
+2.2 System Requirements
+Hardware Requirements
+The backend is intended to run on the following hardware:
+Raspberry Pi 5
+Raspberry Pi AI HAT rated for 14 TOPS
+PiCAN HAT with DC/DC power support
+RNET-compatible powered wheelchair system
+CAN connection from the PiCAN HAT to the wheelchair RNET bus
+The PiCAN HAT is used to interface with the wheelchair’s CAN network. The AI HAT is used to improve the performance of the image-processing pipeline, particularly YOLO-based human detection. The Raspberry Pi 5 acts as the central embedded computer that receives image data, runs backend logic, and sends control commands to the chair.
+Software Requirements
+The Raspberry Pi should be configured with a functional 64-bit Raspberry Pi OS image. Python must be installed, and a fresh virtual environment is recommended to isolate the backend dependencies from the system Python installation.
+The backend requires Python packages for computer vision, machine learning inference, CAN communication, API hosting, and image handling. These packages are installed automatically using the provided setup.sh script.
+2.3 Setup Instructions
+Clone the Repository
+Clone the project repository locally on the Raspberry Pi:
+git clone https://github.com/patrickpierson1/GuideFollowingApp.git
+Move into the backend directory:
+cd GuideFollowingApp/backend
+Connect the PiCAN HAT to the Wheelchair
+Ensure that the PiCAN HAT is properly installed on the Raspberry Pi and connected to the wheelchair CAN bus. The chair-side wiring should be connected as follows:
+12V  : Red wire
+GND  : Black wire
+CAN High : White wire
+CAN Low  : Blue wire
+Before powering the system, confirm that the wiring is secure and that CAN High and CAN Low are not reversed.
+Run the Setup Script
+The backend includes a setup.sh script to automate software setup. Instead of installing each package manually, run the setup script from inside the backend directory:
+./setup.sh
+If the script does not have execute permission, enable it first:
+chmod +x setup.sh
+./setup.sh
+The setup script installs the required backend dependencies and prepares the Python environment. This includes packages for CAN communication, numerical processing, machine learning inference, API hosting, image processing, and YOLO object detection.
+The setup script installs and configures dependencies such as:
+python-can      CAN communication support from Python
+can-utils       Linux CAN utilities for configuring and testing CAN interfaces
+numpy           Numerical processing for detection and tracking data
+torch           PyTorch machine learning framework
+torchvision     Computer vision support for PyTorch
+torchaudio      Audio package bundled with the PyTorch install set
+fastapi         Backend API framework used to communicate with the frontend
+uvicorn         ASGI server used to run the backend application
+ultralytics     YOLO model support
+pillow          Image loading and processing
+python-multipart Support for receiving image uploads from the frontend
+The script should be run before starting the backend for the first time. A fresh Python virtual environment is still recommended so that all packages remain isolated from the system Python installation.
+Enable CAN Support
+The Raspberry Pi must be configured to recognize the PiCAN HAT and enable the CAN interface. Add the following lines to the bottom of: /boot/firmware/config.txt
+dtparam=spi=on
+dtoverlay=mcp2515-can0,oscillator=16000000,interrupt=25
+dtoverlay=spi-bcm2835-overlay
+These configuration lines enable SPI communication and load the MCP2515 CAN controller overlay used by the PiCAN HAT.
+After editing the configuration file, reboot the Raspberry Pi:
+sudo reboot
+Open the CAN Port and Set the Bit Rate
+Once the Raspberry Pi has rebooted, initialize the CAN interface with a bit rate of 125000:
+sudo /sbin/ip link set can0 up type can bitrate 125000
+This opens the can0 interface and configures it to communicate at the correct RNET CAN bus speed.
+To verify that the CAN interface is active, run:
+ip link show can0
+The interface should appear as active before running the backend.
+Run the Backend
+Start the backend server using Uvicorn:
+uvicorn backend:app --reload --host 0.0.0.0 --port 8000 --no-access-log
+Running with --host 0.0.0.0 allows the frontend device to connect to the Raspberry Pi over the local wireless network. The backend listens on port 8000.
+After the backend starts, copy the Raspberry Pi’s IP address into the frontend application so the phone can send image frames to the backend.
+2.4 File Structure
+/backend/backend.py
+backend.py is the main entry point for the backend application. It initializes the image-processing and control systems required for operation. On startup, it loads the YOLO models, initializes the person tracker, and starts a separate process for RNET communication with the wheelchair.
+When the frontend sends an image frame to the backend, the frontend calls the backend detection endpoint. This causes backend.py to pass the image to the detection pipeline, where YOLO is used to identify people in the frame. The resulting detections are then passed to the tracking module, which updates person IDs and returns tracked detection data.
+The backend then checks the current operating state. In tracking mode, it returns the detected people and their IDs so the frontend can display and select a target. In following mode, it uses the selected target ID to determine the person’s position in the frame and updates the shared joystick command values in Shared.py. These shared values are later read by the RNET injection system and converted into motor commands.
+When the backend shuts down, active threads and processes are cleaned up automatically to prevent communication or control threads from continuing after the application has stopped.
+Image Processing
+/backend/ImageProcessing/detect.py
+This module is responsible for running YOLO-based human detection. It receives image data from the backend, performs inference using the loaded YOLO model, and returns bounding box results for detected people.
+The module filters detections based on a minimum confidence threshold. Any detection below this threshold is ignored. This reduces the chance of false detections being passed into the tracker and improves the reliability of the follow behavior.
+The output of this module includes normalized detection data that can be used by the tracking system and frontend display logic.
+/backend/ImageProcessing/track.py
+This module manages person tracking across consecutive frames. Since YOLO detects people independently in each image, the raw detection results do not automatically preserve identity between frames. The tracking module solves this by assigning each detected person a persistent ID.
+The tracker compares bounding boxes from the current frame to bounding boxes from the previous frame using intersection over union. If a current detection overlaps sufficiently with a previous detection, it is treated as the same person and keeps the same ID. If no suitable match is found, a new ID is assigned.
+This allows the system to maintain consistent person identities even as people move through the camera frame. The module returns normalized detections with their associated person IDs.
+/backend/ImageProcessing/guide.py
+This module calculates the position of the selected tracked person relative to the camera frame. It uses the bounding box of the selected target and computes the center point of that box.
+The returned center position is normalized so it can be interpreted as a directional guide value rather than a raw pixel coordinate. This normalized target location is used by the following logic to determine whether the wheelchair should move left, right, forward, or remain centered behind the selected person.
+The guide module acts as the connection between visual tracking and motion control. It converts tracked image-space position into a simplified control reference that can be used by the chair-control system.
+Controls
+/backend/Controls/can2RNET.py
+This module provides RNET communication support over CAN. It is a publicly available module used to help send, receive, inject, and dissect CAN frames on the wheelchair’s RNET communication bus.
+Within this backend, can2RNET.py supports the lower-level CAN frame operations needed by the injection system. It allows the backend to construct and transmit messages that emulate joystick behavior on the RNET bus.
+/backend/Controls/Connect.py
+This module initializes the CAN connection to the wheelchair. It opens the CAN socket, prepares the system for RNET communication, and starts the required communication threads.
+When enabled, this module can also start a keyboard input thread for manual joystick control. This is useful for testing CAN communication and motor response without running the image-detection pipeline.
+During operation, Connect.py prints joystick commands being sent to the motor. This provides feedback for debugging and makes it easier to verify that the shared joystick values are being converted into outgoing control commands.
+When the backend or control process is closed, this module handles thread cleanup so that injection and input-listening threads terminate properly.
+/backend/Controls/Inject.py
+This module is responsible for constructing and injecting joystick-emulation CAN frames. It first determines the correct joystick CAN ID used by the chair’s RNET system. Once the joystick ID is known, it builds CAN frames that represent joystick movement commands.
+The joystick values are read from Shared.py. These values represent the desired x and y joystick position, which may come from the image-following system or from manual keyboard control. Inject.py converts these shared values into RNET-compatible CAN messages and injects them onto the CAN bus.
+This module is the final step between the backend’s control decision and the wheelchair motor controller. It translates high-level movement commands into low-level CAN traffic.
+/backend/Controls/KeyboardCtrl.py
+This optional module listens for keyboard input from the terminal and updates joystick commands based on arrow-key input. It is mainly intended for testing and debugging the RNET control path without using the camera or YOLO detection pipeline.
+When an arrow key is pressed, the module updates the shared joystick x and y values in Shared.py. These values are then read by the injection system and sent to the wheelchair as joystick commands.
+Note: KeyboardCtrl.py should not be run at the same time as image detection or following mode. Both systems update the same shared joystick command values, so running them together may cause conflicting control commands.
+/backend/Controls/Shared.py
+This module provides a shared mutex-protected interface for joystick control values. It stores the joystick x and y variables and provides functions for safely updating or resetting them from multiple threads.
+Because the backend uses separate processes and threads for detection, tracking, keyboard input, and CAN injection, shared state must be protected to prevent inconsistent or conflicting values. Shared.py acts as the common communication point between these systems.
+The image-following pipeline writes updated movement commands to Shared.py, while the CAN injection system reads from it when building joystick frames. This allows the system to separate perception logic from low-level chair control while still maintaining safe communication between threads.
 
-Running the app after first time setup
-- The app will be installed on your phone and can be launched directly from it
-- If you make code changes rebuild and run the app again from Xcode
-- Once your phone has been paired with your mac you can build wirelessly. Just make sure that both your mac and iPhone are on the same WiFi.
+3.0 Swift App Documentation
+3.1 Overview
+The AIChair Guide Following app captures live video from the iPhones camera and sends the frames to the Python backend for processing. The backend performs person detection and tracking then returns bounding box coordinates which the app then displays on screen. Users can tap these boxes to select which person the wheelchair should lock onto and follow.
 
-Running both together (iOS Swift App + Backend)
-1) Start the backend server:
-   - cd GuideFollowingApp/backend/
-   - source .venv/bin/activate
-   - uvicorn backend:app --reload --host 0.0.0.0 --port 8000
-2) Make sure your iPhone and computer are on the same WiFi network (Unless connecting via USB)
-3) Open the app on your iPhone
-4) in the app go to Settings -> Edit IP
-5) Enter your computers local IP address
+The app also uses the iPhones LiDAR camera to estimate the distance of detected individuals. For each detected person the app samples multiple points inside the bounding box and uses the minimum depth value to estimate the distance. This distance is then displayed on the bounding box associated with the detected person and is used to help maintain a safe following distance from the guide.
 
-Project setup and run guide (ExpoGo App)
-------------------------------------
-Prerequisites
-- Node.js and npm (LTS recommended).
-- Expo CLI tooling (bundled with `npx expo`) and Expo Go installed on your iPhone for testing.
+The app is written in Swift using SwiftUI. When tracking is enabled frames from the camera are sent to the backend using HTTP POST requests. Currently the app communicates with the backend through a hotspot hosted by the Raspberry pi which allows the app and backend to communicate without relying on an external network.
 
-1) Install JS deps (in `GuideFollowingApp`):
-   - `npm install`
-   - If not already installed: `npx expo install expo-camera @react-native-community/slider`
-2) Run the Expo app (new terminal):
-   - `npx expo start`
-   - On iPhone, open Expo Go and scan the QR code. Make sure the phone and PC are on the same network.
-3) Update the backend URL in `App.js` to use your PC’s LAN IP (e.g., `http://192.168.x.x:8000/detect`).
-Running both together
-- Terminal 1: activate venv and start backend: `uvicorn backend:app --reload --host 0.0.0.0 --port 8000`
-- Terminal 2: start Expo: `npx expo start`
-- In the Expo app, take a photo; the app will POST it to `/detect` and display the person count from the backend response.
-Common tips
-- If you see numpy/torch trying to compile, verify you’re on Python 3.11 and using the `--only-binary=:all:` installs above.
-- Keep the venv activated whenever running or installing backend Python packages.
+3.2 System Requirements
+Hardware:
+iPhone that supports iOS 15 or later and includes a LiDAR sensor for depth estimation (We are testing on an iPhone 13 Pro)
+Raspberry Pi running the backend and hosting a hotspot connection
+Development:
+macOS with Xcode
+Apple ID for deploying the app through Xcode
+
+3.3 Setup Instructions
+First Time Setup instructions on Xcode
+Clone the repository from GitHub
+Open the project in Xcode
+Plug your iPhone into your Mac using a USB cable. You'll be asked on your phone if you trust this computer and select trust.
+In Xcode select Window -> Devices and Simulators and make sure your iPhone appears under Connected devices.
+In the left sidebar of Xcode click the project name in this case GuideFollowing. Then go to Signing & Capabilities.
+Under team select your Apple ID. If it's not listed add your Apple account. Make sure Automatically manage signing is enabled.
+Select your iPhone as the run destination at the top of Xcode
+Click the run button or press Cmd + R to build and install the app onto your phone.
+Since it's your first time running the app your iPhone will display Untrusted Developer. On your phone go to Settings -> General -> VPN & Device Management - > Developer app -> Trust
+Launch the app and make sure to allow Camera Access.
+After First Setup: The app will be installed on your phone and can be launched directly from it. If you make any code changes, rebuild and run from Xcode. Once your phone has been paired with your mac you can build wirelessly. Just make sure that both your mac and iPhone are on the same WiFi.
+
+3.4 File Structure
+/swift-app/GuideFollowing/CameraView.swift
+Main interface for the app
+Displays the live camera feed and overlays bounding boxes using the detection results from the backend
+Handles user interaction for selecting a guide, starting and stopping tracking, pressing the move and stop button, and opening the settings menu
+boxRect() converts the backend coordinates into on screen box positions and dimensions.
+Displays status when someone is selected like “Following ID: _” or “Lost Track of ID: _”
+Displays the ID and distance estimate associated with each detected person
+/swift-app/GuideFollowing/CameraManager.swift
+Handles all camera functionality
+Sets up the camera session and captures frames using AVCaptureSession
+Calls captureOutput() when a frame is ready
+Passes frames through the onFrameCaptured closure
+Captures depth data from the iPhone’s LiDAR camera and passes it through the onDepthCaptured closure
+/swift-app/GuideFollowing/NetworkManager.swift
+Handles communication between the app and the backend server
+Converts frames into JPEG images and sends them to the /detect endpoint using HTTP POST
+buildRequest() builds the HTTP POST request with the JPEG Image, selected guide ID, movement status, stopping distance, and maximum speed
+Decodes the returned JSON data into DetectedPerson objects and updates the UI
+Calculates distance estimates using the iPhone depth map by sampling 5 points inside each detected person’s bounding box and taking the minimum depth value
+There are also functions for starting and stopping tracking, and resetting the ID tracker
+/swift-app/GuideFollowing/SettingsView.swift
+Allows the user to edit the backend IP address
+Displays backend connection status
+Allows the user to adjust stopping distance using a slider
+Allows the user to adjust maximum following speed using a slider
+Includes a Reset Tracker button to clear all tracked IDs and restart tracking
+/swift-app/GuideFollowing/GuideFollowingApp.swift
+Entry point for the app
+Launches CameraView as the main screen
+
+3.5 How it works
+When the app is launched CameraManager initializes the iPhone camera and begins capturing video frames and depth data from the LiDAR camera. These frames are displayed in CameraView which shows the live feed to the user. When tracking is enabled each captured frame is sent to the backend server through NetworkManager along with information such as the selected guide ID, movement status, stopping distance, and maximum speed. The backend performs person detection and tracking using the YOLO model and returns a list of detected people along with their bounding box coordinates and tracking IDs.
+
+NetworkManager converts this response into DetectedPerson objects and calculates a distance estimate for each detected person using the iPhones depth map. This is done by sampling five points inside each detected person’s bounding box and using the minimum depth value as the estimated distance. The calculated distance is then assigned to the detected person.
+
+Once the detected people array is updated SwiftUI automatically redraws the interface and updates the bounding boxes, IDs, and distance values displayed on screen.
+
+Users can then tap on the bounding box to select which person the wheelchair should follow. The selected ID is highlighted in the interface and is included in the future requests sent to the backend so the same guide can continue to be tracked across frames. Once a guide has been selected the user can press the Move button to begin following them while maintaining the chosen stopping distance.
+
+3.6 Limitations
+Tracking ID problems: The tracking IDs assigned to people can change if a person leaves the camera frame for a few seconds or if people overlap.
+Low frame rate, roughly ~2 fps makes following a guide around harsh corners difficult 
+
+
